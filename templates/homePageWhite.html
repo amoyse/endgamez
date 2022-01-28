@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    
+    <link rel="stylesheet" href="tailwind.css">
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Endgamez</title>
+
+    <link rel="stylesheet" href="/pages.css">
+
+  </head>
+
+  <body>
+    <nav class="z-depth-0">
+      <div class="nav-wrapper white">
+        <div class="row">
+          <div class="col s3 offset-s1">
+            <a href="/templates/homePageWhite.html" class="brand-logo black-text">Endgamez</a>
+          </div>
+        </div>
+
+      </div>
+    </nav>
+
+    <ul id="slide-out" class="sidenav" style="background-color: #16574B;">
+    </ul>
+    
+    <div class="container">
+      <br><br>
+      <h2 class="center-align ">Welcome to Endgamez</h2>
+      <br><br>
+      <div class="row">
+        <!-- Left side-->
+        <div class="col s4 m5 l3">
+          <div class="row">
+            <br><br>
+            <h5 class="">Select ability level</h5>
+            <p class="">(You can select more than one)</p>
+          </div>
+          
+          <div class="row">
+            <form action="#">
+              <p>
+                <label class="black-text">
+                  <input type="checkbox" class="filled-in checkbox-dark"/>
+                  <span>Beginner</span>
+                </label>
+              </p>
+              <p>
+                <label class="black-text">
+                  <input type="checkbox" class="filled-in checkbox-dark"/>
+                  <span>Intermediate</span>
+                </label>
+              </p>
+              <p>
+                <label class="black-text">
+                  <input type="checkbox" class="filled-in checkbox-dark"/>
+                  <span>Advanced</span>
+                </label>
+              </p>
+              <div class="row">
+                <a href="" data-target="slide-out" class="btn sidenav-trigger button1">Show endgames</a>
+              </div>
+            </form>
+          </div>
+
+        </div>
+        
+
+        <!-- Middle-->
+        <div class="col s4 m4 l5 offset-l1">
+          <img src="../resources/rookLogoGreen.png" class="responsive-img" width="280" height="265" alt="">
+        </div>
+
+        <!-- Right side -->
+        <div class="col s3 m4 l3 ">
+
+          <div class="row">
+            <br><br>
+            <h5 class="">Join room</h5>
+          </div>
+
+          <div class="row">
+            <form action="#">
+              <div class="input-field">
+                <input id="room_code" type="text" class="validate ">
+                <label for="room_code">Room code</label>
+              </div>
+              <div>
+                <a href="#" class="btn button1">Join</a>
+              </div>
+            </form>
+          </div>
+          
+          <div class="row">
+            <br><br>
+            <h5 class="">OR</h5>
+          </div>
+
+          <div class="row">
+            <a href="/templates/newRoomWhite.html" class="btn button1">Create room</a>
+          </div>
+
+
+        </div>
+      </div>
+    </div>
+  </body>
+  
+    <!--JavaScript at end of body for optimized loading-->
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        M.AutoInit()
+    </script>
+  </body>
+</html>

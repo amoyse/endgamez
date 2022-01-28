@@ -1,0 +1,21 @@
+.button1 {
+    background-color: #16574B;
+  }
+
+  .button1:hover {
+    background-color: #257062;
+  }
+
+  .checkbox-dark[type="checkbox"].filled-in:checked+span:not(.lever):after {
+    border: 2px solid #16574B;
+    background-color: #16574B;
+  }
+
+  .input-field input[type=text]:focus + label {
+    color: #16574B !important;
+  }
+
+  .row .input-field input[type=text]:focus {
+    border-bottom: 1px solid #16574B;
+    box-shadow: 0 1px 0 0 #16574B;
+  }

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    
+    <!-- <link rel="stylesheet" href="tailwind.css"> -->
+    <link rel="stylesheet" href="/playingStyle.css">
+
+    <link rel="stylesheet" href="/pages.css">
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Endgamez</title>
+
+    
+  </head>
+
+  <body style="background-color: #0C1E1E;">
+    <nav class="z-depth-0">
+      <div class="nav-wrapper" style="background-color: #0C1E1E">
+        <div class="row">
+          <div class="col s3 offset-s1">
+            <a href="/templates/homePageWhite.html" class="brand-logo white-text">Endgamez</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <br><br><br>
+
+    <div class="row">
+      <div class="col s8 m6 l5 offset-l2 offset-m1">
+        <div id="chessboard">
+          <!-- White pieces -->
+          <div id="a8" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="b8" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="c8" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="d8" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="e8" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="f8" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="g8" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="h8" class="black2" onclick="board.selectPiece(this);"></div>
+
+          <div id="a7" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="b7" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="c7" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="d7" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="e7" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="f7" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="g7" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="h7" class="white1" onclick="board.selectPiece(this);"></div>
+
+          <div id="a6" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="b6" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="c6" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="d6" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="e6" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="f6" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="g6" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="h6" class="black2" onclick="board.selectPiece(this);"></div>
+
+          <div id="a5" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="b5" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="c5" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="d5" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="e5" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="f5" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="g5" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="h5" class="white1" onclick="board.selectPiece(this);"></div>
+
+          <div id="a4" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="b4" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="c4" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="d4" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="e4" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="f4" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="g4" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="h4" class="black2" onclick="board.selectPiece(this);"></div>
+
+          <div id="a3" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="b3" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="c3" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="d3" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="e3" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="f3" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="g3" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="h3" class="white1" onclick="board.selectPiece(this);"></div>
+
+          <div id="a2" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="b2" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="c2" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="d2" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="e2" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="f2" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="g2" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="h2" class="black2" onclick="board.selectPiece(this);"></div>
+
+          <div id="a1" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="b1" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="c1" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="d1" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="e1" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="f1" class="white1" onclick="board.selectPiece(this);"></div>
+          <div id="g1" class="black2" onclick="board.selectPiece(this);"></div>
+          <div id="h1" class="white1" onclick="board.selectPiece(this);"></div>
+        </div>
+      </div>
+      <br><br><br><br><br><br>
+      <div class="col s1 m2 l2 offset-m1">
+        <div style="width: 480px; height: 330px; background-color: #233D34;" class="card">
+          <br>
+          <div class="row">
+            <div class="center-align">
+              <h5 class="white-text">White to Move</h5>
+            </div>
+          </div>
+          <br>
+          <div class="center-align">
+            <a class="btn button1" style="margin-right: 40px; padding-right: 30px; padding-left: 30px;">Hint?</a>
+            <a class="btn button1" style="margin-left: 40px; padding-right: 30px; padding-left: 30px;">Solve</a>
+          </div>
+          <br>
+          <div class="center-align">
+            <a class="btn lighten-1 waves-effect waves-light" style="background-color: #c50;">Restart</a>
+          </div>
+          <br><br><br>
+          <div class="center-align">
+            <a class="btn grey darken-1 waves-effect waves-light" style="width: 40%;"><</a>
+            <a class="btn grey darken-1 waves-effect waves-light" style="width: 40%;">></a>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    
+      
+    
+  </body>
+  
+    <!--JavaScript at end of body for optimized loading-->
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <!-- <script src="jquery-3.6.0.js"></script> -->
+    <script>
+        M.AutoInit()
+    </script>
+
+    <script type="text/javascript" src="/app.js"></script>
+  </body>
+</html>
