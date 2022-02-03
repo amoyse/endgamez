@@ -13,6 +13,7 @@ class Board {
         this.chessboard = chessboard;
         this.boardDiv = document.getElementById("chessboard");
         this.highlightedSquares = [];
+        this.takeableSquares = [];
     }
 
     draw() {
@@ -54,14 +55,14 @@ class Board {
     selectPiece(div) {
         let id = div.id;
         let [col, row] = colAndRowFromId(id);
-        let arrRow = 8 - row;
-        let position = this.chessboard[arrRow][col - 1];
+        let position = this.pieceAtId(id)
         
         if (this.highlightedPiece == "") {
             if (position.pieceCode != '') {
                 if (document.getElementsByClassName("selected")[0] !== undefined) {
                     this.unSelectSquare(document.getElementsByClassName("selected")[0]);
                 }
+                
                 this.selectSquare(div, id, true);
                 this.highlightedSquares = this.highlightAvailableSquares(id, position);
             }
@@ -70,6 +71,9 @@ class Board {
                 if (div.id == this.highlightedPiece) {
                     this.unSelectSquare(div, col, row);
                     this.unHighlightAvailableSquares(this.highlightedSquares);
+                    if (this.takeableSquares.length != 0) {
+                        this.makeUnTakeable();
+                    }
                     
                 } else {
                     let highlightedDiv = document.getElementById(this.highlightedPiece);
@@ -81,6 +85,9 @@ class Board {
             } else {
                 if (div.lastChild) {
                     this.unHighlightAvailableSquares(this.highlightedSquares);
+                    if (this.takeableSquares.length != 0) {
+                        this.makeUnTakeable();
+                    }
                     this.movePiece(div);
                 }
             } 
@@ -103,52 +110,87 @@ class Board {
     }
 
     unSelectSquare(highlightedDiv) { 
-        let [col, row] = colAndRowFromId(highlightedDiv.id);
-        if ((col % 2 == 1 && row % 2 == 0) || (col % 2 == 0 && row % 2 == 1)) {
-            highlightedDiv.className = "white1";
-        } else {
-            highlightedDiv.className = "black2";
-        }
+        this.resetSquareColour(highlightedDiv)
         this.highlightedPiece = "";
+    }
+
+    resetSquareColour(div) {
+        let [col, row] = colAndRowFromId(div.id);
+        if ((col % 2 == 1 && row % 2 == 0) || (col % 2 == 0 && row % 2 == 1)) {
+            div.className = "white1";
+        } else {
+            div.className = "black2";
+        }
     }
 
     unHighlightSquare(highlightedDiv) {
         highlightedDiv.removeChild(highlightedDiv.lastChild);
-        
     }
 
     highlightAvailableSquares(id, position) {
         let squares = position.getSquares(id);
-        if (this.pieceAtId(id).piece == "whitePawn" || this.pieceAtId(id).piece == "blackPawn") {
-            for (let i = 0; i < squares.length; i++) {
-                let [col, row] = squares[i];
-    
-                let colLetter = String.fromCharCode(col + 96);
-                let coordinates = colLetter + String(row);
-                let div = document.getElementById(coordinates);
-                if (col)
-                if (this.pieceAt(row, col).pieceCode == "") {
-                    this.highlightSquare(div);
-                } else {
-                    squares.splice(i, 1);
-                }
-            }
-        } else {
-            for (let i = 0; i < squares.length; i++) {
-                let [col, row] = squares[i];
-    
-                let colLetter = String.fromCharCode(col + 96);
-                let coordinates = colLetter + String(row);
-                let div = document.getElementById(coordinates);
-                if (this.pieceAt(row, col).pieceCode == "") {
-                    this.highlightSquare(div);
-                } else {
-                    squares.splice(i, 1);
-                }
+        let highlighted = [];
+
+
+        let piece = this.pieceAtId(id);
+        let [takeable, highlight] = piece.getLegalSquares(this, id, piece.getSquares(id));
+        if (highlight.length != 0) {
+            for (let i = 0; i < highlight.length; i++) {
+                let div = document.getElementById(highlight[i]);
+                this.highlightSquare(div);
+                highlighted.push(colAndRowFromId(highlight[i]));
             }
         }
+        if (takeable.length != 0) {
+            for (let i = 0; i < highlight.length; i++) {
+                let div = document.getElementById(takeable[i]);
+                this.makeTakeable(div);
+            }
+        }
+
+
+        // if (piece instanceof Pawn && piece.isBlack)
+        // if (this.pieceAtId(id).piece == "whitePawn" || this.pieceAtId(id).piece == "blackPawn") {
+        //     for (let i = 0; i < squares.length; i++) {
+        //         let legal = false
+        //         let [col, row] = squares[i];
+    
+        //         let colLetter = String.fromCharCode(col + 96);
+        //         let coordinates = colLetter + String(row);
+        //         let div = document.getElementById(coordinates);
+        //         if (col != selectedCol) {
+        //             if (this.pieceAt(row, col).pieceCode != "") {
+        //                 this.makeTakeable(div);
+        //                 legal = true
+        //             }
+        //         } else {
+        //             if (this.pieceAt(row, col).pieceCode == "") {
+        //                 this.highlightSquare(div);
+        //                 legal = true
+        //             }
+        //         }
+
+        //         if (legal) {
+        //             highlighted.push(squares[i])
+        //         }
+        //     }
+        // } else {
+        //     for (let i = 0; i < squares.length; i++) {
+        //         let [col, row] = squares[i];
+    
+        //         let colLetter = String.fromCharCode(col + 96);
+        //         let coordinates = colLetter + String(row);
+        //         let div = document.getElementById(coordinates);
+        //         if (this.pieceAt(row, col).pieceCode == "") {
+        //             this.highlightSquare(div);
+        //             highlighted.push(squares[i])
+        //         }
+        //     }
+        // }
+
         
-        return squares;
+
+        return highlighted;
     }
 
     unHighlightAvailableSquares(squares) {
@@ -179,16 +221,59 @@ class Board {
                 this.highlightedPiece = "";
                 
             }
-        }
-
-        // if (this.pieceAtId(this.highlightedPiece).piece == "pawn")
-        
+        }        
     }
 
     makeTakeable(div) {
-        div.className += "takeable";
+        div.className += " takeable";
+        this.takeableSquares.push(colAndRowFromId(div.id));
+    }
+
+    makeUnTakeable() {
+        for (let i = 0; i < this.takeableSquares.length; i++) {
+            let [col, row] = this.takeableSquares[i];
+
+            let colLetter = String.fromCharCode(col + 96);
+            let coordinates = colLetter + String(row);
+            let div = document.getElementById(coordinates);
+            div.className -= " takeable";
+            this.resetSquareColour(div);
+        }
+        this.takeableSquares = [];
+        
+
     }
 }
+
+class Chessboard {
+    constructor() {
+        this.board = new Array(8)
+
+        for (var i = 0; i < 8; i++) {
+            board[i] = new Array(8)
+        }
+    }
+
+    pieceAtId(id) {
+        let [col, row] = colAndRowFromId(id);
+        return this.pieceAt(row, col);
+    }
+
+    pieceAt(row, col) {
+        return this.chessboard[8 - row][col - 1];
+    }
+
+    setPieceAtId(id, value) {
+        let [col, row] = colAndRowFromId(id);
+
+        this.setPieceAt(row, col, value);
+    }
+
+    setPieceAt(row, col, value) {
+        this.chessboard[8 - row][col - 1] = value;
+    }
+}
+
 
 class Blank {
     constructor() {
@@ -199,7 +284,6 @@ class Blank {
 
     }
 }
-
 
 
 class Piece {
@@ -213,7 +297,9 @@ class Piece {
         return "blank"
      }
 
+     isWhite() {
 
+     }
 }
 
 class Pawn extends Piece {
@@ -221,6 +307,12 @@ class Pawn extends Piece {
         super(colour, pieceCode, piece)
         this.offFirstRow = offFirstRow;
         this.piece = piece;
+    }
+
+    getCharacter() {
+        if (this.colour == "black") {
+            return ""
+        }
     }
 
     getSquares(id) {
@@ -241,12 +333,34 @@ class Pawn extends Piece {
             squares.push([col - 1, row + 1]);
             squares.push([col + 1, row + 1]);
         }
-        console.log(squares);
         return squares;
     }
 
 
+    getLegalSquares(board, id, squares) {
+        let takeable = [];
+        let highlight = [];
+        let [selectedCol, selectedRow] = colAndRowFromId(id);
+
+        for (let i = 0; i < squares.length; i++) {
+            let [col, row] = squares[i];
+
+            let colLetter = String.fromCharCode(col + 96);
+            let coordinates = colLetter + String(row);
+            if (col != selectedCol) {
+                if (board.pieceAt(row, col).pieceCode != "") {
+                    takeable.push(coordinates)
+                }
+            } else {
+                if (board.pieceAt(row, col).pieceCode == "") {
+                    highlight.push(coordinates)
+                }
+            }   
+        }
+        return [takeable, highlight];
+    }
 }
+
 
 class Rook extends Piece {
     constructor(colour, pieceCode, piece) {
@@ -293,6 +407,8 @@ class Bishop extends Piece {
 
 }
 
+// const COLOUR_BLACK = "BLACK"
+
 class Queen extends Piece {
     constructor(colour, pieceCode, piece) {
         super(colour, pieceCode, piece)
@@ -322,6 +438,7 @@ class King extends Piece {
     }
 
 }
+
 
 
 // let codeDict = {
@@ -404,6 +521,15 @@ const whiteKing = new King("white", whiteKingUni);
 
 
 const blank = new Blank();
+
+// for (var i = 0; i < 8; i++) {
+//     board.setPieceAt(7, i, new Pawn("black"))
+//     board.setPieceAt(2, i, new Pawn("white"))
+
+//     board.setPieceAtId(id, )
+// }
+
+
 
 
 let chessboard = [[blackRook1, blackKnight1, blackBishop1, blackQueen, blackKing, blackBishop2, blackKnight2, blackRook2], 

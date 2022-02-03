@@ -65,5 +65,6 @@
 }
 
 .takeable {
-    background-color: rgb(121, 29, 29);
+    /* background-color: rgb(121, 29, 29); */
+    background-color: rgb(177, 75, 2);
 }

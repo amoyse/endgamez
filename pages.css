@@ -1,9 +1,17 @@
 .button1 {
-    background-color: #16574B;
+    background-color: #c50;
   }
 
   .button1:hover {
-    background-color: #257062;
+    background-color: rgb(202, 111, 46);
+  }
+
+  .button2 {
+    background-color: #16574B;
+  }
+
+  .button2:hover {
+    background-color: #285850;
   }
 
   .checkbox-dark[type="checkbox"].filled-in:checked+span:not(.lever):after {
