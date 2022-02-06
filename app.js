@@ -1,3 +1,6 @@
+const black = "black";
+const white = "white";
+
 
 function colAndRowFromId(id) {
     let [letter, number] = id.split("");
@@ -325,16 +328,16 @@ class Pawn extends Piece {
         this.piece = piece;
     }
 
-    getCharacter() {
-        if (this.colour == "black") {
-            return ""
-        }
-    }
+    // getCharacter() {
+    //     if (this.colour == black) {
+    //         return ""
+    //     }
+    // }
 
     getSquares(id) {
         let squares = [];
         let [col, row] = colAndRowFromId(id);
-        if (this.colour == "black") {
+        if (this.colour == black) {
             squares.push([col, row - 1]);
             if (row == 7) {
                 squares.push([col, row - 2]);
@@ -372,10 +375,17 @@ class Pawn extends Piece {
                     if (piece.pieceCode == "") {
                         highlight.push(coordinates);
                     } else {
-                        if (squares[i + 1]) {
-                            if (squares[i + 1][1] == row + 1) {
-                                squares[i + 1].pop();
+                        if (squares[i + 1]) { // stops pawns from hopping over pieces to go behind them when on first rank
+                            if (this.colour == white) {
+                                if (squares[i + 1][1] == row + 1) {
+                                    squares[i + 1].pop();
+                                }
+                            } else {
+                                if (squares[i + 1][1] == row - 1) {
+                                    squares[i + 1].pop();
+                                }
                             }
+                            
                         }
                     }
                 }   
@@ -411,9 +421,36 @@ class Knight extends Piece {
     getSquares(id) {
         let squares = [];
         let [col, row] = colAndRowFromId(id);
+        squares.push([col - 2, row + 1])
+        squares.push([col - 2, row - 1])
+        squares.push([col - 1, row + 2])
+        squares.push([col - 1, row - 2])
+        squares.push([col + 2, row + 1])
+        squares.push([col + 2, row - 1])
+        squares.push([col + 1, row - 2])
+        squares.push([col + 1, row + 2])
+        return squares
+    }
 
+    getLegalSquares(board, id, squares) {
+        let takeable = [];
+        let highlight = [];
+        let [selectedCol, selectedRow] = colAndRowFromId(id);
+        for (let i = 0; i < squares.length; i++) {
+            let [col, row] = squares[i];
+            if (board.checkIfInBoard(row, col)) {
+                let colLetter = String.fromCharCode(col + 96);
+                let coordinates = colLetter + String(row);
+                let piece = board.pieceAt(row, col);
+                if (piece.pieceCode != "" && piece.colour != this.colour) {
+                    takeable.push(coordinates);
+                } else if (piece.pieceCode == "") {
+                    highlight.push(coordinates);
+                }
+            }
+        }
 
-
+        return [takeable, highlight]
     }
 
 }
@@ -433,7 +470,7 @@ class Bishop extends Piece {
 
 }
 
-// const COLOUR_BLACK = "BLACK"
+// const COLOUR_BLACK = black
 
 class Queen extends Piece {
     constructor(colour, pieceCode, piece) {
@@ -501,59 +538,52 @@ const whitePawnUni = '&#9817;';
 
 
 // BLACK PIECES
-const blackPawn1 = new Pawn("black", blackPawnUni, "blackPawn");
-const blackPawn2 = new Pawn("black", blackPawnUni, "blackPawn");
-const blackPawn3 = new Pawn("black", blackPawnUni, "blackPawn");
-const blackPawn4 = new Pawn("black", blackPawnUni, "blackPawn");
-const blackPawn5 = new Pawn("black", blackPawnUni, "blackPawn");
-const blackPawn6 = new Pawn("black", blackPawnUni, "blackPawn");
-const blackPawn7 = new Pawn("black", blackPawnUni, "blackPawn");
-const blackPawn8 = new Pawn("black", blackPawnUni, "blackPawn");
+const blackPawn1 = new Pawn(black, blackPawnUni, "blackPawn");
+const blackPawn2 = new Pawn(black, blackPawnUni, "blackPawn");
+const blackPawn3 = new Pawn(black, blackPawnUni, "blackPawn");
+const blackPawn4 = new Pawn(black, blackPawnUni, "blackPawn");
+const blackPawn5 = new Pawn(black, blackPawnUni, "blackPawn");
+const blackPawn6 = new Pawn(black, blackPawnUni, "blackPawn");
+const blackPawn7 = new Pawn(black, blackPawnUni, "blackPawn");
+const blackPawn8 = new Pawn(black, blackPawnUni, "blackPawn");
 
-const blackRook1 = new Rook("black", blackRookUni);
-const blackRook2 = new Rook("black", blackRookUni);
+const blackRook1 = new Rook(black, blackRookUni);
+const blackRook2 = new Rook(black, blackRookUni);
 
-const blackKnight1 = new Knight("black", blackKnightUni);
-const blackKnight2 = new Knight("black", blackKnightUni);
+const blackKnight1 = new Knight(black, blackKnightUni);
+const blackKnight2 = new Knight(black, blackKnightUni);
 
-const blackBishop1 = new Bishop("black", blackBishopUni);
-const blackBishop2 = new Bishop("black", blackBishopUni);
+const blackBishop1 = new Bishop(black, blackBishopUni);
+const blackBishop2 = new Bishop(black, blackBishopUni);
 
-const blackQueen = new Queen("black", blackQueenUni);
-const blackKing = new King("black", blackKingUni);
+const blackQueen = new Queen(black, blackQueenUni);
+const blackKing = new King(black, blackKingUni);
 
 
 // WHITE PIECES
-const whitePawn1 = new Pawn("white", whitePawnUni, "whitePawn");
-const whitePawn2 = new Pawn("white", whitePawnUni, "whitePawn");
-const whitePawn3 = new Pawn("white", whitePawnUni, "whitePawn");
-const whitePawn4 = new Pawn("white", whitePawnUni, "whitePawn");
-const whitePawn5 = new Pawn("white", whitePawnUni, "whitePawn");
-const whitePawn6 = new Pawn("white", whitePawnUni, "whitePawn");
-const whitePawn7 = new Pawn("white", whitePawnUni, "whitePawn");
-const whitePawn8 = new Pawn("white", whitePawnUni, "whitePawn");
+const whitePawn1 = new Pawn(white, whitePawnUni, "whitePawn");
+const whitePawn2 = new Pawn(white, whitePawnUni, "whitePawn");
+const whitePawn3 = new Pawn(white, whitePawnUni, "whitePawn");
+const whitePawn4 = new Pawn(white, whitePawnUni, "whitePawn");
+const whitePawn5 = new Pawn(white, whitePawnUni, "whitePawn");
+const whitePawn6 = new Pawn(white, whitePawnUni, "whitePawn");
+const whitePawn7 = new Pawn(white, whitePawnUni, "whitePawn");
+const whitePawn8 = new Pawn(white, whitePawnUni, "whitePawn");
 
-const whiteRook1 = new Rook("white", whiteRookUni);
-const whiteRook2 = new Rook("white", whiteRookUni);
+const whiteRook1 = new Rook(white, whiteRookUni);
+const whiteRook2 = new Rook(white, whiteRookUni);
 
-const whiteKnight1 = new Knight("white", whiteKnightUni);
-const whiteKnight2 = new Knight("white", whiteKnightUni);
+const whiteKnight1 = new Knight(white, whiteKnightUni);
+const whiteKnight2 = new Knight(white, whiteKnightUni);
 
-const whiteBishop1 = new Bishop("white", whiteBishopUni);
-const whiteBishop2 = new Bishop("white", whiteBishopUni);
+const whiteBishop1 = new Bishop(white, whiteBishopUni);
+const whiteBishop2 = new Bishop(white, whiteBishopUni);
 
-const whiteQueen = new Queen("white", whiteQueenUni);
-const whiteKing = new King("white", whiteKingUni);
+const whiteQueen = new Queen(white, whiteQueenUni);
+const whiteKing = new King(white, whiteKingUni);
 
 
 const blank = new Blank();
-
-// for (var i = 0; i < 8; i++) {
-//     board.setPieceAt(7, i, new Pawn("black"))
-//     board.setPieceAt(2, i, new Pawn("white"))
-
-//     board.setPieceAtId(id, )
-// }
 
 
 
@@ -564,7 +594,7 @@ let chessboard = [[blackRook1, blackKnight1, blackBishop1, blackQueen, blackKing
                   [blank, blank ,blank, blank, blank, blank, blank, blank],
                   [blank, blank ,blank, blank, blank, blank, blank, blank],
                   [blank, blank ,blank, blank, blank, blank, blank, blank],
-                  [whitePawn1, whitePawn2, whitePawn3, whitePawn4, whitePawn5, whitePawn6, whitePawn7, whitePawn8],
+                  [whitePawn1, whitePawn2, whitePawn3, whitePawn4, whitePawn5, whitePawn6, whitePawn7, blank],
                   [whiteRook1, whiteKnight1, whiteBishop1, whiteQueen, whiteKing, whiteBishop2, whiteKnight2, whiteRook2] ];
 
 
