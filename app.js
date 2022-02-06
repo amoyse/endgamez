@@ -378,11 +378,11 @@ class Pawn extends Piece {
                         if (squares[i + 1]) { // stops pawns from hopping over pieces to go behind them when on first rank
                             if (this.colour == white) {
                                 if (squares[i + 1][1] == row + 1) {
-                                    squares[i + 1].pop();
+                                    squares.splice(i, 1);
                                 }
                             } else {
                                 if (squares[i + 1][1] == row - 1) {
-                                    squares[i + 1].pop();
+                                    squares.splice(i, 1);
                                 }
                             }
                             
@@ -406,9 +406,87 @@ class Rook extends Piece {
     getSquares(id) {
         let squares = [];
         let [col, row] = colAndRowFromId(id);
+        for (let i = 1; i < 8; i++) {
+            squares.push([col + i, row]);
+            squares.push([col - i, row]);
+            squares.push([col, row + i]);
+            squares.push([col, row - i]);
+        }
+        return squares
+    }
 
+    getLegalSquares(board, id, squares) {
+        let takeable = [];
+        let highlight = [];
+        let [selectedCol, selectedRow] = colAndRowFromId(id);
+        for (let i = 0; i < squares.length; i++) {
+            let [col, row] = squares[i];
+            if (board.checkIfInBoard(row, col)) {
+                let colLetter = String.fromCharCode(col + 96);
+                let coordinates = colLetter + String(row);
+                let piece = board.pieceAt(row, col);
+                if (piece.pieceCode != "" && piece.colour != this.colour) {
+                    takeable.push(coordinates);
+                    if (col > selectedCol) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] > col) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (col < selectedCol) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] < col) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (row > selectedRow) {
+                        
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][1] > row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (row < selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][1] < row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    }
+                } else if (piece.pieceCode == "") {
+                    highlight.push(coordinates);
+                } else {
+                    if (col > selectedCol) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] > col) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (col < selectedCol) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] < col) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (row > selectedRow) {
+                        
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][1] > row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (row < selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][1] < row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-
+        return [takeable, highlight]
     }
 
 }
@@ -594,7 +672,7 @@ let chessboard = [[blackRook1, blackKnight1, blackBishop1, blackQueen, blackKing
                   [blank, blank ,blank, blank, blank, blank, blank, blank],
                   [blank, blank ,blank, blank, blank, blank, blank, blank],
                   [blank, blank ,blank, blank, blank, blank, blank, blank],
-                  [whitePawn1, whitePawn2, whitePawn3, whitePawn4, whitePawn5, whitePawn6, whitePawn7, blank],
+                  [whitePawn1, whitePawn2, whitePawn3, whitePawn4, whitePawn5, whitePawn6, whitePawn7, whitePawn8],
                   [whiteRook1, whiteKnight1, whiteBishop1, whiteQueen, whiteKing, whiteBishop2, whiteKnight2, whiteRook2] ];
 
 
