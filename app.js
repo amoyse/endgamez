@@ -50,6 +50,18 @@ class Board {
     setPieceAt(row, col, value) {
         this.chessboard[8 - row][col - 1] = value;
     }
+    
+    checkIfInBoard(row, col){
+        for (let i = 0; i < this.chessboard.length; i++) {
+            let boardRow = this.chessboard[i];
+            for (let j = 0; j < boardRow.length; j++) {
+                if (8 - row == i && col - 1 == j) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 
 
     selectPiece(div) {
@@ -80,8 +92,7 @@ class Board {
                     this.unSelectSquare(highlightedDiv);
                     this.unHighlightAvailableSquares(this.highlightedSquares);
                     this.selectSquare(div, id, true);
-                    this.highlightedSquares = this.highlightAvailableSquares(id, position);
-                }
+                    this.highlightedSquares = this.highlightAvailableSquares(id, position);                }
             } else {
                 if (div.lastChild) {
                     this.unHighlightAvailableSquares(this.highlightedSquares);
@@ -142,7 +153,7 @@ class Board {
             }
         }
         if (takeable.length != 0) {
-            for (let i = 0; i < highlight.length; i++) {
+            for (let i = 0; i < takeable.length; i++) {
                 let div = document.getElementById(takeable[i]);
                 this.makeTakeable(div);
             }
@@ -344,18 +355,22 @@ class Pawn extends Piece {
 
         for (let i = 0; i < squares.length; i++) {
             let [col, row] = squares[i];
+            if (board.checkIfInBoard(row, col)) {
+                let colLetter = String.fromCharCode(col + 96);
+                let coordinates = colLetter + String(row);
+                let piece = board.pieceAt(row, col);
+                if (col != selectedCol) {
+                    if (piece.pieceCode != "" && piece.colour != this.colour) {
+                        takeable.push(coordinates)
+                    }
+                } else {
+                    if (piece.pieceCode == "") {
+                        highlight.push(coordinates)
+                    }
+                }   
+                
+            }
 
-            let colLetter = String.fromCharCode(col + 96);
-            let coordinates = colLetter + String(row);
-            if (col != selectedCol) {
-                if (board.pieceAt(row, col).pieceCode != "") {
-                    takeable.push(coordinates)
-                }
-            } else {
-                if (board.pieceAt(row, col).pieceCode == "") {
-                    highlight.push(coordinates)
-                }
-            }   
         }
         return [takeable, highlight];
     }
