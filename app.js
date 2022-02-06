@@ -25,6 +25,8 @@ class Board {
                 document.getElementById(coordinates).innerHTML = row[j].pieceCode;
                 if (row[j].pieceCode != ''){
                     document.getElementById(coordinates).style.cursor = "pointer";
+                } else {
+                    document.getElementById(coordinates).style.cursor = "default";  // because moving a piece left a trail which seems selectable
                 }
                 
             }
@@ -91,6 +93,9 @@ class Board {
                     let highlightedDiv = document.getElementById(this.highlightedPiece);
                     this.unSelectSquare(highlightedDiv);
                     this.unHighlightAvailableSquares(this.highlightedSquares);
+                    if (this.takeableSquares.length != 0) {
+                        this.makeUnTakeable();
+                    }
                     this.selectSquare(div, id, true);
                     this.highlightedSquares = this.highlightAvailableSquares(id, position);                }
             } else {
@@ -361,11 +366,17 @@ class Pawn extends Piece {
                 let piece = board.pieceAt(row, col);
                 if (col != selectedCol) {
                     if (piece.pieceCode != "" && piece.colour != this.colour) {
-                        takeable.push(coordinates)
+                        takeable.push(coordinates);
                     }
                 } else {
                     if (piece.pieceCode == "") {
-                        highlight.push(coordinates)
+                        highlight.push(coordinates);
+                    } else {
+                        if (squares[i + 1]) {
+                            if (squares[i + 1][1] == row + 1) {
+                                squares[i + 1].pop();
+                            }
+                        }
                     }
                 }   
                 
