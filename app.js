@@ -541,9 +541,86 @@ class Bishop extends Piece {
     getSquares(id) {
         let squares = [];
         let [col, row] = colAndRowFromId(id);
+        for (let i = 1; i < 8; i++) {
+            squares.push([col + i, row + i]);
+            squares.push([col + i, row - i]);
+            squares.push([col - i, row + i]);
+            squares.push([col - i, row - i]);
+        }
+        return squares;
 
+    }
 
+    getLegalSquares(board, id, squares) {
+        let takeable = [];
+        let highlight = [];
+        let [selectedCol, selectedRow] = colAndRowFromId(id);
+        for (let i = 0; i < squares.length; i++) {
+            let [col, row] = squares[i];
+            if (board.checkIfInBoard(row, col)) {
+                let colLetter = String.fromCharCode(col + 96);
+                let coordinates = colLetter + String(row);
+                let piece = board.pieceAt(row, col);
+                if (piece.pieceCode != "" && piece.colour != this.colour) {
+                    takeable.push(coordinates);
+                    if (col > selectedCol && row > selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] > col && squares[j][1] > row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (col > selectedCol && row < selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] > col && squares[j][1] < row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (col < selectedCol && row > selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] < col && squares[j][1] > row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (col < selectedCol && row < selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] < col && squares[j][1] < row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    }
+                } else if (piece.pieceCode == "") {
+                    highlight.push(coordinates);
+                } else {
+                    if (col > selectedCol && row > selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] > col && squares[j][1] > row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (col > selectedCol && row < selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] > col && squares[j][1] < row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (col < selectedCol && row > selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] < col && squares[j][1] > row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    } else if (col < selectedCol && row < selectedRow) {
+                        for (let j = 0; j < squares.length; j++) {
+                            if (squares[j][0] < col && squares[j][1] < row) {
+                                squares.splice(j, 1);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
+        return [takeable, highlight]
     }
 
 }
