@@ -780,9 +780,38 @@ class King extends Piece {
     getSquares(id) {
         let squares = [];
         let [col, row] = colAndRowFromId(id);
+        squares.push([col + 1, row]);
+        squares.push([col - 1, row]);
+        squares.push([col, row + 1]);
+        squares.push([col, row - 1]);
+        squares.push([col + 1, row + 1]);
+        squares.push([col + 1, row - 1]);
+        squares.push([col - 1, row + 1]);
+        squares.push([col - 1, row - 1]);
 
+        return squares;
 
+    }
+    
+    getLegalSquares(board, id, squares) {
+        let takeable = [];
+        let highlight = [];
+        let [selectedCol, selectedRow] = colAndRowFromId(id);
+        for (let i = 0; i < squares.length; i++) {
+            let [col, row] = squares[i];
+            if (board.checkIfInBoard(row, col)) {
+                let colLetter = String.fromCharCode(col + 96);
+                let coordinates = colLetter + String(row);
+                let piece = board.pieceAt(row, col);
+                if (piece.pieceCode != "" && piece.colour != this.colour) {
+                    takeable.push(coordinates);
+                } else if (piece.pieceCode == "") {
+                    highlight.push(coordinates);
+                }
+            }
+        }
 
+        return [takeable, highlight]
     }
 
 }
