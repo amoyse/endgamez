@@ -2,6 +2,12 @@
 *:before,
 *:after {
  -webkit-box-sizing:content-box !important; 
+ -webkit-touch-callout: none;
+ -webkit-user-select: none;
+ -khtml-user-select: none;
+ -moz-user-select: none;
+ -ms-user-select: none;
+ user-select: none;
  box-sizing:content-box !important;
 }
 
@@ -13,7 +19,7 @@
 
 }
 
-#chessboard > .white1, #chessboard > .black2, .highlighted, .selected {
+#chessboard > .white1, #chessboard > .black2, .highlighted, .selected, .takeable {
     text-align: center;
 }
 
@@ -67,4 +73,9 @@
 .takeable {
     /* background-color: rgb(121, 29, 29); */
     background-color: rgb(177, 75, 2);
+    float: left;
+    width: 60px;
+    height: 60px;
+    font-size: 45px;
+    line-height: 50px;
 }
