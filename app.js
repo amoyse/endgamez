@@ -103,6 +103,37 @@ class Board {
     }
 
 
+    checkIfUnderAttack(id) {
+        for (let i = 0; i < this.chessboard.length; i++) {
+            let row = this.chessboard[i];
+            for (let j = 0; j < row.length; j++) {
+                let coordinates = idFromColAndRow(j + 1, 8 - i);
+                if (row[j].colour != turn && row[j].pieceCode != '') {
+
+                    if (row[j].piece != pawn) {
+                        let [takeable, highlight] = row[j].getSquaresIgnoringCheck(board, coordinates);
+                        if (takeable.includes(id) || highlight.includes(id)) {
+                            return true;
+                        }
+                    } else {
+                        let controlled = row[j].getSquaresIgnoringCheck(board, coordinates);
+                        if (controlled.includes(id)) {
+                            return true;
+                        }
+                    }
+
+                    
+                    // console.log(takeable, highlight, id, row[j].colour, row[j].piece);
+                    
+                    
+                    
+                }
+            }
+        }
+        return false;
+    }
+
+
     selectPiece(div) {
         let id = div.id;
         let [col, row] = colAndRowFromId(id);
@@ -133,7 +164,6 @@ class Board {
                         
                         if (position.colour != this.pieceAtId(this.highlightedPiece).colour) { // if you clicked on an enemy piece -> take it!!
                             this.takePiece(id);
-                            console.log(taken);
                             if (this.takeableSquares.length != 0) {
                                 this.makeUnTakeable();
                             }
@@ -382,6 +412,10 @@ class Blank {
     getPieceName(id) {
 
     }
+
+    getSquaresIgnoringCheck(board, id) {
+         return null;
+    }
 }
 
 
@@ -395,6 +429,18 @@ class Piece {
      getSquares(id) {
         return "blank"
      }
+    
+     getLegalSquares(board, id) {
+
+     }
+
+     getSquaresIgnoringCheck(board, id) {
+         
+     }
+    
+     getControlledSquares(board, id) {
+
+     }
 
      isWhite() {
 
@@ -402,17 +448,10 @@ class Piece {
 }
 
 class Pawn extends Piece {
-    constructor(colour, pieceCode, piece, offFirstRow=true) {
+    constructor(colour, pieceCode, piece) {
         super(colour, pieceCode, piece)
-        this.offFirstRow = offFirstRow;
         this.piece = piece;
     }
-
-    // getCharacter() {
-    //     if (this.colour == black) {
-    //         return ""
-    //     }
-    // }
 
     getSquares(id) {
         let squares = [];
@@ -474,6 +513,23 @@ class Pawn extends Piece {
 
         }
         return [takeable, highlight];
+    }
+
+    getSquaresIgnoringCheck(board, id) {
+        return this.getControlledSquares(board, id);
+    }
+
+    getControlledSquares(board, id) {
+        let controlled = [];
+        let [selectedCol, selectedRow] = colAndRowFromId(id);
+        let squares = this.getSquares(id);
+        for (let i = 0; i < squares.length; i++) {
+            let [col, row] = squares[i];
+            if (board.checkIfInBoard(row, col) && col != selectedCol) {
+                controlled.push(idFromColAndRow(col, row));
+            }
+        }
+        return controlled;
     }
 }
 
@@ -569,6 +625,10 @@ class Rook extends Piece {
         return [takeable, highlight]
     }
 
+    getSquaresIgnoringCheck(board, id) {
+        return this.getLegalSquares(board, id);
+    }
+
 }
 
 class Knight extends Piece {
@@ -608,6 +668,10 @@ class Knight extends Piece {
         }
 
         return [takeable, highlight]
+    }
+
+    getSquaresIgnoringCheck(board, id) {
+        return this.getLegalSquares(board, id);
     }
 
 }
@@ -677,6 +741,10 @@ class Bishop extends Piece {
         }
 
         return [takeable, highlight]
+    }
+
+    getSquaresIgnoringCheck(board, id) {
+        return this.getLegalSquares(board, id);
     }
 
 }
@@ -777,6 +845,10 @@ class Queen extends Piece {
         return [takeable, highlight]
     }
 
+    getSquaresIgnoringCheck(board, id) {
+        return this.getLegalSquares(board, id);
+    }
+
 }
 
 class King extends Piece {
@@ -804,13 +876,11 @@ class King extends Piece {
         let squares = this.getSquares(id);
         let takeable = [];
         let highlight = [];
-        let notMovable = [];
-        let [selectedCol, selectedRow] = colAndRowFromId(id);
         for (let i = 0; i < squares.length; i++) {
             let [col, row] = squares[i];
             if (board.checkIfInBoard(row, col)) {
-                let coordinates = idFromColAndRow(col, row);
                 let piece = board.pieceAt(row, col);
+                let coordinates = idFromColAndRow(col, row);
                 
 
 
@@ -848,44 +918,59 @@ class King extends Piece {
                 //     }
                 // }
                 
-                if (!this.underAttack(coordinates, board)) {
+                if (!board.checkIfUnderAttack(coordinates)) {
                     if (piece.pieceCode != "" && piece.colour != this.colour) {
                         takeable.push(coordinates);
                     } else if (piece.pieceCode == "") {
                         highlight.push(coordinates);
                     }
-                    
                 }
-
             }
         }
-        // for (let i = 0; i < highlight; i++) {
-        //     if (highlight[i] in notMovable) {
-        //         highlight.splice(i, 1);
-        //     }
-        // }
-        // for (let i = 0; i < takeable; i++) {
-        //     if (takeable[i] in notMovable) {
-        //         takeable.splice(i, 1);
-        //     }
+
 
         return [takeable, highlight]
     }
 
-    underAttack(id, board) {
-        for (let i = 0; i < board.length; i++) {
-            let row = board[i];
-            for (let j = 0; j < row.length; j++) {
-                if (row[j].colour != this.colour) {
-                    let [takeable, highlight] = row[j].getLegalSquares(board, id)
-                    if (id in takeable || id in highlight) {
-                        return true;
-                    }
+    getSquaresIgnoringCheck(board, id) {
+        let squares = this.getSquares(id);
+        let takeable = [];
+        let highlight = [];
+        for (let i = 0; i < squares.length; i++) {
+            let [col, row] = squares[i];
+            if (board.checkIfInBoard(row, col)) {
+                let piece = board.pieceAt(row, col);
+                let coordinates = idFromColAndRow(col, row);
+                
+                if (piece.pieceCode != "" && piece.colour != this.colour) {
+                    takeable.push(coordinates);
+                } else if (piece.pieceCode == "") {
+                    highlight.push(coordinates);
                 }
             }
         }
-        return false;
+        return [takeable, highlight]
     }
+
+
+    // underAttack(id, board) {
+        
+    //     for (let i = 0; i < board.length; i++) {
+    //         let row = board[i];
+    //         console.log("run");
+    //         for (let j = 0; j < row.length; j++) {
+    //             console.log("run2");
+    //             if (row[j].colour != this.colour) {
+    //                 console.log("run3");
+    //                 let [takeable, highlight] = row[j].getLegalSquares(board, id)
+    //                 if (id in takeable || id in highlight) {
+    //                     return true;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return false;
+    // }
 
 }
 
