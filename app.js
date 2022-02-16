@@ -12,6 +12,9 @@ const king = "king";
 let taken = [];
 let turn = white;
 
+let checked = "";
+let attacking = "";
+
 
 function colAndRowFromId(id) {
     let [letter, number] = id.split("");
@@ -27,6 +30,38 @@ function idFromColAndRow(col, row) {
 }
 
 function removeSquares() {
+
+}
+
+
+class Player {
+    constructor(colour) {
+        this.colour = colour;
+        this.inCheck = false;
+    }
+
+    setCheck(board) {
+        let found = false;
+        for (let i = 0; i < board.chessboard.length; i++) {
+            let row = board.chessboard[i];
+            for (let j = 0; j < row.length; j++) {
+                if (row[j].piece == king && row[j].colour == this.colour) {
+                    let coordinates = idFromColAndRow(j + 1, 8 - i);
+                    if (board.checkIfUnderAttack(coordinates, false, this.colour)) {
+                        checked = coordinates;
+                        found = true;
+                        this.inCheck = true;
+                        return;
+                    }
+                }
+            }
+        }
+        if (found == true) {
+            checked = "";
+            this.inCheck = false;
+
+        }
+    }
 
 }
 
@@ -103,30 +138,65 @@ class Board {
     }
 
 
-    checkIfUnderAttack(id) {
+    checkIfUnderAttack(id, checkColour=true, colour=null) {
         for (let i = 0; i < this.chessboard.length; i++) {
             let row = this.chessboard[i];
             for (let j = 0; j < row.length; j++) {
                 let coordinates = idFromColAndRow(j + 1, 8 - i);
-                if (row[j].colour != turn && row[j].pieceCode != '') {
-
+                if (((row[j].colour != turn && !checkColour) || (checkColour && row[j].colour != colour)) && row[j].pieceCode != '') {
                     if (row[j].piece != pawn) {
+                        // console.log(row[j].piece);
                         let [takeable, highlight] = row[j].getSquaresIgnoringCheck(board, coordinates);
                         if (takeable.includes(id) || highlight.includes(id)) {
+                            attacking = coordinates;
                             return true;
                         }
                     } else {
                         let controlled = row[j].getSquaresIgnoringCheck(board, coordinates);
                         if (controlled.includes(id)) {
+                            attacking = coordinates;
                             return true;
                         }
                     }
+                }
+            }
+        }
+        return false;
+    }
 
-                    
-                    // console.log(takeable, highlight, id, row[j].colour, row[j].piece);
-                    
-                    
-                    
+    getsOutOfCheck(id) { // passes in the id of a square, if moving the highlighted piece here gets out of check, return true
+        let outOfCheck = true;
+
+        let oldId = this.highlightedPiece;
+
+
+        let piece = this.pieceAtId(oldId);
+        this.setPieceAtId(id, piece);
+        this.setPieceAtId(oldId, new Blank());
+
+        player1.setCheck(board);
+        player2.setCheck(board);
+
+        if (player1.inCheck || player2.inCheck) {
+            outOfCheck = !this.checkIfKingUnderAttack(turn);
+        }
+        
+        piece = this.pieceAtId(id);
+        this.setPieceAtId(oldId, piece);
+        this.setPieceAtId(id, new Blank());
+
+        return outOfCheck;
+    }
+
+    checkIfKingUnderAttack(colour) {
+        for (let i = 0; i < this.chessboard.length; i++) {
+            let row = this.chessboard[i];
+            for (let j = 0; j < row.length; j++) {
+                if (row[j].piece == king && row[j].colour == colour) {
+                    let coordinates = idFromColAndRow(j + 1, 8 - i);
+                    if (this.checkIfUnderAttack(coordinates)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -135,6 +205,10 @@ class Board {
 
 
     selectPiece(div) {
+
+        player1.setCheck(board);
+        player2.setCheck(board);
+
         let id = div.id;
         let [col, row] = colAndRowFromId(id);
         let position = this.pieceAtId(id)
@@ -164,12 +238,12 @@ class Board {
                         
                         if (position.colour != this.pieceAtId(this.highlightedPiece).colour) { // if you clicked on an enemy piece -> take it!!
                             this.takePiece(id);
+                            this.draw();
                             if (this.takeableSquares.length != 0) {
                                 this.makeUnTakeable();
                             }
                             this.unHighlightAvailableSquares(this.highlightedSquares);
                             this.unSelectSquare(highlightedDiv);
-                            
                         } else {
                             if (this.takeableSquares.length != 0) {
                                 this.makeUnTakeable();
@@ -188,7 +262,8 @@ class Board {
                         if (this.takeableSquares.length != 0) {
                             this.makeUnTakeable();
                         }
-                        this.movePiece(div);
+                        this.movePiece(this.highlightedPiece, id);
+                        this.draw();
                     }
                 } 
             }
@@ -232,94 +307,74 @@ class Board {
     }
 
     highlightAvailableSquares(id) {
+        
         let highlighted = [];
         let piece = this.pieceAtId(id);
-        let [takeable, highlight] = piece.getLegalSquares(this, id);
-        if (highlight.length != 0) {
-            for (let i = 0; i < highlight.length; i++) {
-                let div = document.getElementById(highlight[i]);
-                this.highlightSquare(div);
-                highlighted.push(colAndRowFromId(highlight[i]));
+        if ((player1.inCheck && player1.colour == turn) || (player2.inCheck && player2.colour == turn)) {
+            let takeable = [];
+            let highlight = [];
+            if (piece.piece == pawn) {
+                [takeable, highlight] = piece.getLegalSquares(this, id);
+            } else {
+                [takeable, highlight] = piece.getSquaresIgnoringCheck(this, id);
+            }
+            if (highlight.length != 0) {
+                for (let i = 0; i < highlight.length; i++) {
+                    if (this.getsOutOfCheck(highlight[i])) {
+                        let div = document.getElementById(highlight[i]);
+                        this.highlightSquare(div);
+                        highlighted.push(colAndRowFromId(highlight[i]));
+                    }
+                }
+            }
+            if (takeable.length != 0) {
+                if (takeable.includes(attacking)) {
+                    let div = document.getElementById(attacking);
+                    this.makeTakeable(div);
+                }
+            }
+        } else {
+            let [takeable, highlight] = piece.getLegalSquares(this, id);
+            if (highlight.length != 0) {
+                for (let i = 0; i < highlight.length; i++) {
+                    let div = document.getElementById(highlight[i]);
+                    this.highlightSquare(div);
+                    highlighted.push(colAndRowFromId(highlight[i]));
+                }
+            }
+            if (takeable.length != 0) {
+                for (let i = 0; i < takeable.length; i++) {
+                    let div = document.getElementById(takeable[i]);
+                    this.makeTakeable(div);
+                }
             }
         }
-        if (takeable.length != 0) {
-            for (let i = 0; i < takeable.length; i++) {
-                let div = document.getElementById(takeable[i]);
-                this.makeTakeable(div);
-            }
-        }
-
-
-        // if (piece instanceof Pawn && piece.isBlack)
-        // if (this.pieceAtId(id).piece == "whitePawn" || this.pieceAtId(id).piece == "blackPawn") {
-        //     for (let i = 0; i < squares.length; i++) {
-        //         let legal = false
-        //         let [col, row] = squares[i];
-    
-        //         let colLetter = String.fromCharCode(col + 96);
-        //         let coordinates = colLetter + String(row);
-        //         let div = document.getElementById(coordinates);
-        //         if (col != selectedCol) {
-        //             if (this.pieceAt(row, col).pieceCode != "") {
-        //                 this.makeTakeable(div);
-        //                 legal = true
-        //             }
-        //         } else {
-        //             if (this.pieceAt(row, col).pieceCode == "") {
-        //                 this.highlightSquare(div);
-        //                 legal = true
-        //             }
-        //         }
-
-        //         if (legal) {
-        //             highlighted.push(squares[i])
-        //         }
-        //     }
-        // } else {
-        //     for (let i = 0; i < squares.length; i++) {
-        //         let [col, row] = squares[i];
-    
-        //         let colLetter = String.fromCharCode(col + 96);
-        //         let coordinates = colLetter + String(row);
-        //         let div = document.getElementById(coordinates);
-        //         if (this.pieceAt(row, col).pieceCode == "") {
-        //             this.highlightSquare(div);
-        //             highlighted.push(squares[i])
-        //         }
-        //     }
-        // }
-
-        
-
         return highlighted;
     }
 
     unHighlightAvailableSquares(squares) {
-        for (let i = 0; i < squares.length; i++) {
-            let [col, row] = squares[i];
+        if (squares.length > 0) {
+            for (let i = 0; i < squares.length; i++) {
+                let [col, row] = squares[i];
 
-            let coordinates = idFromColAndRow(col, row);
-            let div = document.getElementById(coordinates);
-            this.unHighlightSquare(div);
+                let coordinates = idFromColAndRow(col, row);
+                let div = document.getElementById(coordinates);
+                this.unHighlightSquare(div);
+            }
+            
         }
         
     }
 
-    movePiece(div) {
-        let id = div.id;
-        let [col, row] = colAndRowFromId(id);
+    movePiece(from, to) {
+        let [col, row] = colAndRowFromId(to);
 
         for (let i = 0; i < this.highlightedSquares.length; i++) {
             if (col == this.highlightedSquares[i][0] && row == this.highlightedSquares[i][1]) {
                 
-                let piece = this.pieceAtId(this.highlightedPiece);
-                this.setPieceAtId(id, piece);
-
-                this.setPieceAtId(this.highlightedPiece, new Blank());
-
-                
-
-                this.draw();
+                let piece = this.pieceAtId(from);
+                this.setPieceAtId(to, piece);
+                this.setPieceAtId(from, new Blank());
 
                 this.highlightedPiece = "";
                 
@@ -331,6 +386,8 @@ class Board {
                 
             }
         }        
+        player1.setCheck(board);
+        player2.setCheck(board);
     }
 
     makeTakeable(div) {
@@ -359,7 +416,6 @@ class Board {
             taken.push([pieceToTake.piece, pieceToTake.colour]); // it doesn't matter which knight (for example) the piece is, we just need to know where it is and what piece it is
             this.setPieceAtId(id, piece);
             this.setPieceAtId(this.highlightedPiece, new Blank());
-            this.draw();
             this.highlightedPiece = "";
             
             if (turn == white) {
@@ -407,6 +463,7 @@ class Blank {
     constructor() {
         this.pieceCode = '';
         this.colour = null
+        this.piece = "blank";
     }
 
     getPieceName(id) {
@@ -529,7 +586,7 @@ class Pawn extends Piece {
                 controlled.push(idFromColAndRow(col, row));
             }
         }
-        return controlled;
+        return [controlled, []];
     }
 }
 
@@ -882,42 +939,6 @@ class King extends Piece {
                 let piece = board.pieceAt(row, col);
                 let coordinates = idFromColAndRow(col, row);
                 
-
-
-                // if (board.checkIfInBoard(row + 1, col + 1)) {
-                //     if (board.pieceAt(row + 1, col + 1).piece == king && (board.pieceAt(row + 1, col + 1).colour != this.colour)) {
-                //         notMovable.push(row + 1, col + 1);
-                //     }
-                // } else if (board.checkIfInBoard(row + 1, col - 1)) {
-                //     if (board.pieceAt(row + 1, col - 1).piece == king && (board.pieceAt(row + 1, col - 1).colour != this.colour)) {
-                //         notMovable.push(row + 1, col - 1);
-                //     }
-                // } else if (board.checkIfInBoard(row - 1, col + 1)) {
-                //     if (board.pieceAt(row - 1, col + 1).piece == king && (board.pieceAt(row - 1, col + 1).colour != this.colour)) {
-                //         notMovable.push(row - 1, col + 1);
-                //     }
-                // } else if (board.checkIfInBoard(row - 1, col - 1)) {
-                //     if (board.pieceAt(row - 1, col - 1).piece == king && (board.pieceAt(row - 1, col - 1).colour != this.colour)) {
-                //         notMovable.push(row - 1, col - 1);
-                //     }
-                // } else if (board.checkIfInBoard(row, col + 1)) {
-                //     if (board.pieceAt(row, col + 1).piece == king && (board.pieceAt(row, col + 1).colour != this.colour)) {
-                //         notMovable.push(row, col + 1);
-                //     }
-                // } else if (board.checkIfInBoard(row, col - 1)) {
-                //     if (board.pieceAt(row, col - 1).piece == king && (board.pieceAt(row, col - 1).colour != this.colour)) {
-                //         notMovable.push(row, col - 1);
-                //     }
-                // } else if (board.checkIfInBoard(row + 1, col)) {
-                //     if (board.pieceAt(row + 1, col).piece == king && (board.pieceAt(row + 1, col).colour != this.colour)) {
-                //         notMovable.push(row + 1, col);
-                //     }
-                // } else if (board.checkIfInBoard(row - 1, col)) {
-                //     if (board.pieceAt(row - 1, col).piece == king && (board.pieceAt(row - 1, col).colour != this.colour)) {
-                //         notMovable.push(row - 1, col);
-                //     }
-                // }
-                
                 if (!board.checkIfUnderAttack(coordinates)) {
                     if (piece.pieceCode != "" && piece.colour != this.colour) {
                         takeable.push(coordinates);
@@ -953,24 +974,6 @@ class King extends Piece {
     }
 
 
-    // underAttack(id, board) {
-        
-    //     for (let i = 0; i < board.length; i++) {
-    //         let row = board[i];
-    //         console.log("run");
-    //         for (let j = 0; j < row.length; j++) {
-    //             console.log("run2");
-    //             if (row[j].colour != this.colour) {
-    //                 console.log("run3");
-    //                 let [takeable, highlight] = row[j].getLegalSquares(board, id)
-    //                 if (id in takeable || id in highlight) {
-    //                     return true;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return false;
-    // }
 
 }
 
@@ -1039,6 +1042,9 @@ const whiteKing = new King(white, whiteKingUni, king);
 
 
 const blank = new Blank();
+
+const player1 = new Player(white);
+const player2 = new Player(black);
 
 
 
