@@ -12,16 +12,32 @@
 }
 
 #chessboard {
-    width: 480px;
-    height: 480px;
-    margin: 20px;
-    border: 25px solid #233D34;
-
-}
-
-#chessboard > .white1, #chessboard > .black2, .highlighted, .selected, .takeable {
+    width: 35vw;
+    height: 35vw;
+    min-width: 350px;
+    min-height: 350px;
+    margin: auto;
+    border: 1.8vw solid #233D34;
     text-align: center;
+    margin-bottom: 40px;
+
 }
+/* @media all and (min-width: 50px)   {  #chessboard  { border: 10px solid #233D34; } } */
+@media all and (min-width: 50px)   {  body  { font-size:1em;  } }
+@media all and (min-width: 900px)  {  body  { font-size:1.05em;  } }
+@media all and (min-width: 1000px) {  body  { font-size:1.1em;  } }
+@media all and (min-width: 1100px) {  body  { font-size:1.25em;  } }
+@media all and (min-width: 1200px) {  body  { font-size:1.3em;  } }
+@media all and (min-width: 1300px) {  body  { font-size:1.4em;  } }
+@media all and (min-width: 1400px) {  body  { font-size:1.5em;  } }
+@media all and (min-width: 1500px) {  body  { font-size:1.5em;  } }
+@media all and (min-width: 1500px) {  body  { font-size:1.6em;  } }
+@media all and (min-width: 1600px) {  body  { font-size:1.8em;  } }
+@media all and (min-width: 1700px) {  body  { font-size:2em;  } }
+
+/* #chessboard > .white1, #chessboard > .black2, .highlighted, .selected, .takeable, .checked {
+    text-align: center;
+} */
 
 #chessboard > .white1, #chessboard > .black2, .highlighted {
     cursor: default;
@@ -29,53 +45,64 @@
 
 .black2 {
     float: left;
-    width: 60px;
-    height: 60px;
+    width: 12.5%;
+    height: 12.5%;
+    font-size: 200%;
+    line-height: 115%;
     background-color: #999;
-    font-size: 45px;
-    line-height: 50px;
 }
 .white1 {
     float: left;
-    width: 60px;
-    height: 60px;
+    width: 12.5%;
+    height: 12.5%;
+    font-size: 200%;
+    line-height: 115%;
     background-color: #fff;
-    font-size: 45px;
-    line-height: 50px;
 }
 
 .highlighted {
-    height: 25px;
-    width: 25px;
-    background-color: #bbb;
+    width: 40%;
+    height: 40%;
     border-radius: 50%;
     display: inline-block;
+    background-color: #bbb;
     background-color: #16574B;
+    
 }
 
 .selected {
     float: left;
-    width: 60px;
-    height: 60px;
-    font-size: 45px;
-    line-height: 50px;
+    width: 12.5%;
+    height: 12.5%;
+    font-size: 200%;
+    line-height: 115%;
     background-color: #16574B;
 }
 
 .dot {
     height: 25px;
     width: 25px;
-    background-color: #bbb;
     border-radius: 50%;
+    background-color: #bbb;
     display: inline-block;
+    
 }
 
 .takeable {
     /* background-color: rgb(121, 29, 29); */
     background-color: rgb(177, 75, 2);
     float: left;
-    width: 60px;
-    height: 60px;
-    font-size: 45px;
-    line-height: 50px;
+    width: 12.5%;
+    height: 12.5%;
+    font-size: 200%;
+    line-height: 115%;
+}
+
+.checked {
+    background-color: rgb(145, 57, 57);
+    float: left;
+    width: 12.5%;
+    height: 12.5%;
+    font-size: 200%;
+    line-height: 115%;
 }

@@ -32,7 +32,7 @@
     <br><br><br>
 
     <div class="row">
-      <div class="col s8 m6 l5 offset-l2 offset-m1">
+      <div class="col s12 m12 l6 offset-l1">
         <div id="chessboard">
           <!-- White pieces -->
           <div id="a8" class="white1" onclick="board.selectPiece(this);"></div>
@@ -108,29 +108,39 @@
           <div id="h1" class="white1" onclick="board.selectPiece(this);"></div>
         </div>
       </div>
-      <br><br><br><br><br><br>
-      <div class="col s1 m2 l2 offset-m1">
-        <div style="width: 480px; height: 330px; background-color: #233D34;" class="card">
-          <br>
+      <br><br><br>
+      <div class="col s8 m4 l4 offset-s1 offset-m4 offset-s2">
+        <div style="background-color: #233D34;" class="card">
           <div class="row">
             <div class="center-align">
-              <h5 class="white-text">White to Move</h5>
+              <h5 class="white-text" style=" padding-top: 2vh; padding-bottom: 2vw;">White to Move</h5>
+              <div class="row" style="padding-bottom: 5%;">
+                <div class="col s12 m2 l2 offset-l3 offset-m2">
+                  <a class="btn button2 waves-effect waves-light">Hint?</a>
+                </div>
+                <div class="col s12 m2 l2 offset-l1 offset-m1">
+                  <a class="btn button2 waves-effect waves-light">Solve</a>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col s12 m2 l2 offset-l4 offset-m4">
+                  <a class="btn lighten-1 waves-effect waves-light button1">Restart</a>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col s6 m3 l3 offset-l2 offset-m2">
+                  <a class="btn grey darken-1 waves-effect waves-light" style="width: 100%;"><</a>
+  
+                </div>
+                <div class="col s6 m3 l3 offset-l1">
+                  <a class="btn grey darken-1 waves-effect waves-light" style="width: 100%;">></a>
+  
+                </div>
+              </div>
             </div>
+            
           </div>
-          <br>
-          <div class="center-align">
-            <a class="btn button2 waves-effect waves-light" style="margin-right: 40px; padding-right: 30px; padding-left: 30px;">Hint?</a>
-            <a class="btn button2 waves-effect waves-light" style="margin-left: 40px; padding-right: 30px; padding-left: 30px;">Solve</a>
-          </div>
-          <br>
-          <div class="center-align">
-            <a class="btn lighten-1 waves-effect waves-light button1">Restart</a>
-          </div>
-          <br><br><br>
-          <div class="center-align">
-            <a class="btn grey darken-1 waves-effect waves-light" style="width: 40%;"><</a>
-            <a class="btn grey darken-1 waves-effect waves-light" style="width: 40%;">></a>
-          </div>
+            
           
         </div>
       </div>
