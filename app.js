@@ -35,25 +35,28 @@ class Player {
     }
 
     setCheck(board) {
-        let found = false;
         for (let i = 0; i < board.chessboard.length; i++) {
             let row = board.chessboard[i];
             for (let j = 0; j < row.length; j++) {
                 if (row[j].piece == king && row[j].colour == this.colour) {
                     let coordinates = idFromColAndRow(j + 1, 8 - i);
+
                     if (board.checkCheck(coordinates, this.colour)) {
+                        board.pieceAtId(coordinates).inCheck = true;
                         checked = coordinates;
-                        found = true;
                         this.inCheck = true;
+                        board.makeChecked(coordinates);
                         return true;
+                    } else {
+                        if (this.inCheck && checked != "") {
+                            board.resetSquareColour(document.getElementById(checked));
+                            checked = "";
+                        }
+                        this.inCheck = false
+                        return false;
                     }
                 }
             }
-        }
-        if (found == false) {
-            checked = "";
-            this.inCheck = false;
-            return false;
         }
     }
 
@@ -105,6 +108,20 @@ class Board {
 
     setPieceAt(row, col, value) {
         this.chessboard[8 - row][col - 1] = value;
+    }
+
+    setTurn() {
+        let turnElement = document.getElementById("turnToMove");
+        if (turn == white) {
+            turnElement.innerHTML = "White to Move";
+        } else {
+            turnElement.innerHTML = "Black to Move";
+        }
+    }
+
+    checkCheckCheck() {
+        player1.setCheck(board);
+        player2.setCheck(board);
     }
     
     checkIfInBoard(row, col){
@@ -226,8 +243,7 @@ class Board {
         this.setPieceAtId(id, piece);
         this.setPieceAtId(oldId, new Blank());
 
-        player1.setCheck(board);
-        player2.setCheck(board);
+        this.checkCheck()
 
         if (player1.inCheck || player2.inCheck) {
             outOfCheck = !this.checkIfKingUnderAttack(turn);
@@ -237,8 +253,7 @@ class Board {
         this.setPieceAtId(oldId, piece);
         this.setPieceAtId(id, new Blank());
 
-        player1.setCheck(board);
-        player2.setCheck(board);
+        this.checkCheckCheck()
 
         return outOfCheck;
     }
@@ -261,8 +276,7 @@ class Board {
 
     selectPiece(div) {
 
-        player1.setCheck(board);
-        player2.setCheck(board);
+        this.checkCheckCheck();
 
         let id = div.id;
         let [col, row] = colAndRowFromId(id);
@@ -340,9 +354,18 @@ class Board {
         element.id = "dot";
         div.appendChild(element);
     }
+    
+    makeChecked(id) {
+        let div = document.getElementById(id);
+        div.className = "checked"
+        
+    }
+
 
     unSelectSquare(highlightedDiv) {
-        this.resetSquareColour(highlightedDiv)
+        if (highlightedDiv.id != checked) {
+            this.resetSquareColour(highlightedDiv)
+        }
         this.highlightedPiece = "";
     }
 
@@ -444,11 +467,11 @@ class Board {
                 } else {
                     turn = white;
                 }
+                this.setTurn();
                 
             }
         }        
-        player1.setCheck(board);
-        player2.setCheck(board);
+        this.checkCheckCheck();
     }
 
     makeTakeable(div) {
@@ -484,6 +507,8 @@ class Board {
             } else {
                 turn = white;
             }
+            this.checkCheckCheck();
+            this.setTurn();
             
         }
     }
@@ -990,6 +1015,7 @@ class Queen extends Piece {
 class King extends Piece {
     constructor(colour, pieceCode, piece) {
         super(colour, pieceCode, piece)
+        this.inCheck = false;
     }
 
     getSquares(id) {
