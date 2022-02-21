@@ -110,13 +110,22 @@ class Board {
         this.chessboard[8 - row][col - 1] = value;
     }
 
-    setTurn() {
+    setTurn(checkmate=false) {
         let turnElement = document.getElementById("turnToMove");
-        if (turn == white) {
-            turnElement.innerHTML = "White to Move";
+        if (!checkmate) {
+            if (turn == white) {
+                turnElement.innerHTML = "White to Move";
+            } else {
+                turnElement.innerHTML = "Black to Move";
+            }
         } else {
-            turnElement.innerHTML = "Black to Move";
+            if (turn == white) {
+                turnElement.innerHTML = "Checkmate! Black Wins!";
+            } else {
+                turnElement.innerHTML = "Checkmate! White Wins!";
+            }
         }
+        
     }
 
     checkCheckCheck() {
@@ -172,16 +181,16 @@ class Board {
         return false;
     }
     
-    checkSquareToMoveTo(id) {
+    checkSquareToMoveTo(id, mate=false) {
         let squareToMoveTo = this.pieceAtId(id);
 
         for (let i = 0; i < this.chessboard.length; i++) {
             let row = this.chessboard[i];
             for (let j = 0; j < row.length; j++) {
                 let coordinates = idFromColAndRow(j + 1, 8 - i);
-                if (row[j].colour != turn ) {
+                if ((row[j].colour != turn && !mate) || (row[j].colour != squareToMoveTo.colour && mate)) {
                     if (row[j].pieceCode != '') {
-                        if (squareToMoveTo.pieceCode != '') {
+                        if (squareToMoveTo.pieceCode != '' && !mate) {
                             let controlled = row[j].getControlledSquares(board, coordinates);
                             if (controlled.includes(id)) {
                                 return true;
@@ -190,6 +199,13 @@ class Board {
                         } else {
                             let [takeable, highlight] = row[j].getSquaresIgnoringCheck(board, coordinates);
                             if (takeable.includes(id) || highlight.includes(id)) {
+                                if (row[j].piece == king && mate) {
+                                    if (!this.checkIfDefended(coordinates)) {
+                                        return true;
+                                    }
+                                }
+                                return true;
+                            } else if (mate) {
                                 return true;
                             }
                         }
@@ -201,46 +217,31 @@ class Board {
         return false;
     }
 
-    checkIfUnderAttack(id, checkColour=true, colour=turn) {
+    checkIfDefended(id) {
         let squareToMoveTo = this.pieceAtId(id);
-        
         for (let i = 0; i < this.chessboard.length; i++) {
             let row = this.chessboard[i];
             for (let j = 0; j < row.length; j++) {
                 let coordinates = idFromColAndRow(j + 1, 8 - i);
-                if (((row[j].colour != turn && !checkColour) || (checkColour && row[j].colour != colour))) {
+                if (squareToMoveTo.colour == row[j].colour) {
                     if (row[j].pieceCode != '') {
-                        if (squareToMoveTo.pieceCode != '') {
-                            let controlled = row[j].getControlledSquares(board, coordinates);
-                            if (controlled.includes(id)) {
-                                this.attackingPiece = coordinates;
-                                return true;
-                            }
-            
-                        } else {
-                            let [takeable, highlight] = row[j].getSquaresIgnoringCheck(board, coordinates);
-                            if (takeable.includes(id) || highlight.includes(id)) {
-                                this.attackingPiece = coordinates;
-                                return true;
-                            }
+                        let controlled = row[j].getControlledSquares(board, coordinates);
+                        if (controlled.includes(id)) {
+                            return true;
                         }
-                        
                     }
                 }
             }
         }
-        this.attackingPiece = "";
         return false;
     }
 
-    getsOutOfCheck(id) { // passes in the id of a square, if moving the highlighted piece here gets out of check, return true
+    getsOutOfCheck(oldId, newId) { // passes in the id of square to come from and id of square to go to and checks if moving there changes check status
         let outOfCheck = true;
-
-        let oldId = this.highlightedPiece;
 
 
         let piece = this.pieceAtId(oldId);
-        this.setPieceAtId(id, piece);
+        this.setPieceAtId(newId, piece);
         this.setPieceAtId(oldId, new Blank());
 
         this.checkCheck()
@@ -249,9 +250,9 @@ class Board {
             outOfCheck = !this.checkIfKingUnderAttack(turn);
         }
         
-        piece = this.pieceAtId(id);
+        piece = this.pieceAtId(newId);
         this.setPieceAtId(oldId, piece);
-        this.setPieceAtId(id, new Blank());
+        this.setPieceAtId(newId, new Blank());
 
         this.checkCheckCheck()
 
@@ -271,6 +272,58 @@ class Board {
             }
         }
         return false;
+    }
+    
+    checkForCheckmate() {
+        if (checked != '') {
+            let piece = this.pieceAtId(checked);
+            let [takeable, highlight] = piece.getLegalSquares(this, checked);
+            if (takeable.length == 0 && highlight.length == 0) {
+                
+                if (this.checkSquareToMoveTo(checked, true)) {
+                    this.setTurn(true);
+                }
+
+            } else {
+                if (highlight.length != 0) {
+                    for (let i = 0; i < highlight.length; i++) {
+                        if (this.getsOutOfCheck(checked, highlight[i])) {
+                            return;
+                        }
+                    }
+                }
+                if (takeable.length != 0) {
+                    if (takeable.includes(this.attackingPiece)) {
+                        if (!this.checkSquareToMoveTo(this.attackingPiece)) {
+                            console.log("he taking boi");
+                            return;
+                        }
+                    }
+                }
+                this.setTurn(true);
+            }
+        }
+    }
+    
+    checkForPromotion(id) {
+        let piece = this.pieceAtId(id);
+        let [letter, number] = id.split("");
+        if (piece.piece == pawn) {
+            if ((piece.colour == white && number == 8) || (piece.colour == black && number == 1)) {
+                this.promotePawn(id); 
+             }
+        }
+        
+        
+    }
+    
+    promotePawn(id) {
+        let piece = this.pieceAtId(id);
+        if (piece.colour == white) {
+            this.setPieceAtId(id, new Queen(white, whiteQueenUni, queen)); 
+        } else {
+            this.setPieceAtId(id, new Queen(black, blackQueenUni, queen)); 
+        }
     }
 
 
@@ -397,7 +450,7 @@ class Board {
             }
             if (highlight.length != 0) {
                 for (let i = 0; i < highlight.length; i++) {
-                    if (this.getsOutOfCheck(highlight[i])) {
+                    if (this.getsOutOfCheck(this.highlightedPiece, highlight[i])) {
                         let div = document.getElementById(highlight[i]);
                         this.highlightSquare(div);
                         highlighted.push(colAndRowFromId(highlight[i]));
@@ -467,11 +520,13 @@ class Board {
                 } else {
                     turn = white;
                 }
+                this.checkForPromotion(to);
                 this.setTurn();
                 
             }
         }        
         this.checkCheckCheck();
+        this.checkForCheckmate();
     }
 
     makeTakeable(div) {
@@ -507,8 +562,10 @@ class Board {
             } else {
                 turn = white;
             }
+            this.checkForPromotion(id);
             this.checkCheckCheck();
             this.setTurn();
+            this.checkForCheckmate();
             
         }
     }
@@ -1015,7 +1072,6 @@ class Queen extends Piece {
 class King extends Piece {
     constructor(colour, pieceCode, piece) {
         super(colour, pieceCode, piece)
-        this.inCheck = false;
     }
 
     getSquares(id) {
@@ -1043,7 +1099,6 @@ class King extends Piece {
             if (board.checkIfInBoard(row, col)) {
                 let piece = board.pieceAt(row, col);
                 let coordinates = idFromColAndRow(col, row);
-                
                 if (!board.checkSquareToMoveTo(coordinates)) {
                     if (piece.pieceCode != "" && piece.colour != this.colour) {
                         takeable.push(coordinates);
