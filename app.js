@@ -73,6 +73,147 @@ class Board {
         this.attackingPiece = "";
     }
 
+
+    fenToBoard(fen) {
+    
+        let [piecePlacement, move, castling, enPassant, halfmove, fullmove] = fen.split("_"); // change to "_" -> using space for testing purposes
+        let ranks = piecePlacement.split("/");
+        for (let i = 0; i < ranks.length; i++ ) {
+            let rank = ranks[i];
+            let col = 0;
+            for (let j = 0; j < rank.length; j++) {
+
+                if (!isNaN(rank[j])) {
+                    let numberOfBlank = parseInt(rank[j]);
+                    for (let b = 0; b < numberOfBlank; b++) {
+                        this.chessboard[i][col] = new Blank();
+                        col++;
+                    }
+                } else if (rank[j] === rank[j].toLowerCase()) {
+                    if (rank[j] == "p") {
+                        this.chessboard[i][col] = new Pawn(black, blackPawnUni, pawn);
+                        
+                    } else if (rank[j] == "n") {
+                        this.chessboard[i][col] = new Knight(black, blackKnightUni, knight);
+                        
+                    } else if (rank[j] == "b") {
+                        this.chessboard[i][col] = new Bishop(black, blackBishopUni, bishop);
+
+                    } else if (rank[j] == "r") {
+                        this.chessboard[i][col] = new Rook(black, blackRookUni, rook);
+                        
+                    } else if (rank[j] == "k") {
+                        this.chessboard[i][col] = new King(black, blackKingUni, king);
+                        
+                    } else if (rank[j] == "q") {
+                        this.chessboard[i][col] = new Queen(black, blackQueenUni, queen);
+                    }
+
+                    col++;
+
+                } else {
+                    if (rank[j] == "P") {
+                        this.chessboard[i][col] = new Pawn(white, whitePawnUni, pawn);
+                        
+                    } else if (rank[j] == "N") {
+                        this.chessboard[i][col] = new Knight(white, whiteKnightUni, knight);
+                        
+                    } else if (rank[j] == "B") {
+                        this.chessboard[i][col] = new Bishop(white, whiteBishopUni, bishop);
+
+                    } else if (rank[j] == "R") {
+                        this.chessboard[i][col] = new Rook(white, whiteRookUni, rook);
+                        
+                    } else if (rank[j] == "K") {
+                        this.chessboard[i][col] = new King(white, whiteKingUni, king);
+                        
+                    } else if (rank[j] == "Q") {
+                        this.chessboard[i][col] = new Queen(white, whiteQueenUni, queen);
+                    }
+                    
+                    col++;
+                    
+                }
+            }
+    
+        }
+        if (move == "w") {
+            turn = white;
+        } else {
+            turn = black;
+        }
+        this.setTurn();
+    }
+    
+    boardToFEN() {
+        let fen = "";
+        let piecePlacement = "";
+        let move = "";
+        for (let i = 0; i < this.chessboard.length; i++) {
+            let row = this.chessboard[i];
+            let blankInARow = 0;
+            let rank = "";
+            for (let j = 0; j < row.length; j++) {
+                if (row[j].piece == "blank") {
+                    blankInARow++;
+                    if (j == row.length - 1) {
+                        rank += blankInARow;
+                    }
+                } else {
+                    if (blankInARow > 0) {
+                        rank += String(blankInARow);
+                        blankInARow = 0;
+                    }
+                    if (row[j].colour == white) {
+                        if (row[j].piece == pawn) {
+                            rank += "P";
+                        } else if (row[j].piece == knight) {
+                            rank += "N";
+                        } else if (row[j].piece == bishop) {
+                            rank += "B";
+                        } else if (row[j].piece == rook) {
+                            rank += "R";
+                        } else if (row[j].piece == king) {
+                            rank += "K";
+                        } else if (row[j].piece == queen) {
+                            rank += "Q";
+                        }
+                    } else if (row[j].colour == black) {
+                        if (row[j].piece == pawn) {
+                            rank += "p";
+                        } else if (row[j].piece == knight) {
+                            rank += "n";
+                        } else if (row[j].piece == bishop) {
+                            rank += "b";
+                        } else if (row[j].piece == rook) {
+                            rank += "r";
+                        } else if (row[j].piece == king) {
+                            rank += "k";
+                        } else if (row[j].piece == queen) {
+                            rank += "q";
+                        }
+                    }
+                }
+            }
+            if (i > 0) {
+                piecePlacement += "/" + rank;
+            } else {
+                piecePlacement += rank;
+            }
+        }
+
+        if (turn == white) {
+            move = "w";
+        } else {
+            move = "b";
+        }
+        
+        fen = piecePlacement + "_" + move + "_-_-_0_1"
+        return fen;
+
+    }
+
+
     draw() {
         for (let i = 0; i < this.chessboard.length; i++) {
             let row = this.chessboard[i];
@@ -295,7 +436,6 @@ class Board {
                 if (takeable.length != 0) {
                     if (takeable.includes(this.attackingPiece)) {
                         if (!this.checkSquareToMoveTo(this.attackingPiece)) {
-                            console.log("he taking boi");
                             return;
                         }
                     }
@@ -461,6 +601,14 @@ class Board {
                 if (takeable.includes(this.attackingPiece)) {
                     let div = document.getElementById(this.attackingPiece);
                     this.makeTakeable(div);
+                }
+                if (piece.piece == king) {
+                    for (let i = 0; i < takeable.length; i++) {
+                        if (takeable[i] != this.attackingPiece) {
+                            let div = document.getElementById(takeable[i]);
+                            this.makeTakeable(div);
+                        }
+                    }
                 }
             }
         } else {
@@ -1141,8 +1289,6 @@ class King extends Piece {
 }
 
 
-
-
 const blackRookUni = '&#9820;';
 const blackKnightUni = '&#9822;';
 const blackBishopUni = '&#9821;';
@@ -1203,9 +1349,11 @@ const whiteBishop2 = new Bishop(white, whiteBishopUni, bishop);
 const whiteQueen = new Queen(white, whiteQueenUni, queen);
 const whiteKing = new King(white, whiteKingUni, king);
 
-
+// Blank piece
 const blank = new Blank();
 
+
+// Players
 const player1 = new Player(white);
 const player2 = new Player(black);
 
