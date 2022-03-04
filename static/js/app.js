@@ -34,7 +34,7 @@ class Player {
         this.inCheck = false;
     }
 
-    setCheck(board) {
+    setCheck(board, temp=false) {
         for (let i = 0; i < board.chessboard.length; i++) {
             let row = board.chessboard[i];
             for (let j = 0; j < row.length; j++) {
@@ -42,10 +42,12 @@ class Player {
                     let coordinates = idFromColAndRow(j + 1, 8 - i);
 
                     if (board.checkCheck(coordinates, this.colour)) {
-                        board.pieceAtId(coordinates).inCheck = true;
-                        checked = coordinates;
-                        this.inCheck = true;
-                        board.makeChecked(coordinates);
+                        if (!temp) {
+                            board.pieceAtId(coordinates).inCheck = true;
+                            checked = coordinates;
+                            this.inCheck = true;
+                            board.makeChecked(coordinates);
+                        }
                         return true;
                     } else {
                         if (this.inCheck && checked != "") {
@@ -380,25 +382,24 @@ class Board {
     getsOutOfCheck(oldId, newId) { // passes in the id of square to come from and id of square to go to and checks if moving there changes check status
         let outOfCheck = true;
 
-
         let piece = this.pieceAtId(oldId);
+        let otherPiece = this.pieceAtId(newId);
         this.setPieceAtId(newId, piece);
         this.setPieceAtId(oldId, new Blank());
 
-        this.checkCheck()
-
-        if (player1.inCheck || player2.inCheck) {
+        if (player1.setCheck(this, true) || player2.setCheck(this, true)) {
             outOfCheck = !this.checkIfKingUnderAttack(turn);
         }
         
         piece = this.pieceAtId(newId);
         this.setPieceAtId(oldId, piece);
-        this.setPieceAtId(newId, new Blank());
+        this.setPieceAtId(newId, otherPiece);
 
         this.checkCheckCheck()
 
         return outOfCheck;
     }
+    
 
     checkIfKingUnderAttack(colour) {
         for (let i = 0; i < this.chessboard.length; i++) {
@@ -453,8 +454,6 @@ class Board {
                 this.promotePawn(id); 
              }
         }
-        
-        
     }
     
     promotePawn(id) {
@@ -612,25 +611,23 @@ class Board {
                 }
             }
         } else {
-            // let takeable = [];
-            // let highlight = [];
-            // if (piece.piece != king) {
-            //     [takeable, highlight] = piece.getLegalSquares(this, id);
-            // } else {
-            //     [takeable, highlight] = piece.getSquaresIgnoringCheck(this, id);
-            // }
             let [takeable, highlight] = piece.getLegalSquares(this, id);
             if (highlight.length != 0) {
                 for (let i = 0; i < highlight.length; i++) {
-                    let div = document.getElementById(highlight[i]);
-                    this.highlightSquare(div);
-                    highlighted.push(colAndRowFromId(highlight[i]));
+                    if (this.getsOutOfCheck(id, highlight[i])) { // needed to stop pieces that are pinned from moving
+                        let div = document.getElementById(highlight[i]);
+                        this.highlightSquare(div);
+                        highlighted.push(colAndRowFromId(highlight[i]));
+                    }
                 }
             }
             if (takeable.length != 0) {
                 for (let i = 0; i < takeable.length; i++) {
-                    let div = document.getElementById(takeable[i]);
-                    this.makeTakeable(div);
+                    if (this.getsOutOfCheck(id, takeable[i])) { // needed to stop pieces that are pinned from moving
+                        let div = document.getElementById(takeable[i]);
+                        this.makeTakeable(div);
+                    }
+                    
                 }
             }
         }

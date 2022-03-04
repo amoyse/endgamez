@@ -7,9 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     
     <!-- <link rel="stylesheet" href="tailwind.css"> -->
-    <link rel="stylesheet" href="/playingStyle.css">
-
-    <link rel="stylesheet" href="/pages.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/playingStyle.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
 
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -23,7 +22,7 @@
       <div class="nav-wrapper" style="background-color: #0C1E1E">
         <div class="row">
           <div class="col s3 offset-s1">
-            <a href="/templates/homePageWhite.html" class="brand-logo white-text">Endgamez</a>
+            <a href="/" class="brand-logo white-text">Endgamez</a>
           </div>
         </div>
       </div>
@@ -123,18 +122,16 @@
                 </div>
               </div>
               <div class="row">
-                <div class="col s12 m2 l2 offset-l4 offset-m4">
+                <div class="center-align">
                   <a class="btn lighten-1 waves-effect waves-light button1">Restart</a>
                 </div>
               </div>
               <div class="row">
                 <div class="col s6 m3 l3 offset-l2 offset-m2">
                   <a class="btn grey darken-1 waves-effect waves-light" style="width: 100%;"><</a>
-  
                 </div>
                 <div class="col s6 m3 l3 offset-l1">
                   <a class="btn grey darken-1 waves-effect waves-light" style="width: 100%;">></a>
-  
                 </div>
               </div>
             </div>
@@ -152,13 +149,13 @@
   </body>
   
     <!--JavaScript at end of body for optimized loading-->
-    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <!-- <script src="{{ url_for('static', filename='js/materialize.min.js') }}"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <!-- <script src="jquery-3.6.0.js"></script> -->
     <script>
         M.AutoInit()
     </script>
 
-    <script type="text/javascript" src="/app.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>>
   </body>
 </html>
