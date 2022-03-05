@@ -44,34 +44,35 @@
           </div>
           
           <div class="row">
-            <form action="#">
+            <form method="POST" action="/">
               <p>
                 <label class="black-text">
-                  <input type="checkbox" class="filled-in checkbox-dark"/>
+                  <input type="checkbox" name="myCheckbox" value="Beginner" class="filled-in checkbox-dark"/>
                   <span>Beginner</span>
                 </label>
               </p>
               <p>
                 <label class="black-text">
-                  <input type="checkbox" class="filled-in checkbox-dark"/>
+                  <input type="checkbox" name="myCheckbox" value="Intermediate" class="filled-in checkbox-dark"/>
                   <span>Intermediate</span>
                 </label>
               </p>
               <p>
                 <label class="black-text">
-                  <input type="checkbox" class="filled-in checkbox-dark"/>
+                  <input type="checkbox" name="myCheckbox" value="Advanced" class="filled-in checkbox-dark"/>
                   <span>Advanced</span>
                 </label>
               </p>
               <div class="row">
-                <a href="" data-target="slide-out" class="btn sidenav-trigger button2">Show endgames</a>
+                  <input type="submit" href="/select-endgame" class="btn button2">
+                  <span>Show endgames</span>
               </div>
             </form>
           </div>
 
         </div>
         
-
+        
         <!-- Middle-->
         <div class="col s4 m4 l5 offset-l1">
           <img src="{{ url_for('static', filename='resources/rookLogoGreen.png') }}" class="responsive-img" width="280" height="265" alt="">
