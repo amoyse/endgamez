@@ -6,7 +6,7 @@
     <!--Import materialize.css-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/pages.css') }}">
 
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -18,7 +18,7 @@
       <div class="nav-wrapper white">
         <div class="row">
           <div class="col s3 offset-s1">
-            <a href="/templates/homePageWhite.html" class="brand-logo black-text">Endgamez</a>
+            <a href="/" class="brand-logo black-text">Endgamez</a>
           </div>
         </div>
       </div>
@@ -27,63 +27,43 @@
     <div class="container">
       <br><br>
       
-      <h3 class="black-text center-align">Create a New Room</h3>
+      <h3 class="center-align">Select Endgame</h3>
+      <p class="center-align">(Press orange play button to play)</p>
       
-      <div id="options" class="row">
-        <div >
-          <div class="col s6 m4 l4 offset-l2 offset-m2">
-            <br><br>
-            <div class="row">
-              <h5 class="black-text ">Room name (optional)</h5>
-            </div>
-            
-            <form action="#" >
-              <div class="row">
-                  <div class="input-field">
-                    <input id="room_name" type="text" onkeyup="countChars(this);" class="black-text" data-length="10">
-                    <label for="room_name">Name</label>
-                    <p id="charNum" class="black-text">0 characters</p> 
-                  </div> 
-              </div>
-              
-  
-              <div class="row">
-                <h5 class="black-text">Select ability level</h5>
-                <p class="black-text">(You can select more than one)</p>
-              </div>
-              
-              <div class="row">
-                <p>
-                  <label class="black-text">
-                    <input type="checkbox" class="filled-in checkbox-dark"/>
-                    <span>Beginner</span>
-                  </label>
-                </p>
-                <p>
-                  <label class="black-text">
-                    <input type="checkbox" class="filled-in checkbox-dark"/>
-                    <span>Intermediate</span>
-                  </label>
-                </p>
-                <p>
-                  <label class="black-text">
-                    <input type="checkbox" class="filled-in checkbox-dark"/>
-                    <span>Advanced</span>
-                  </label>
-                </p>
-                
-              </div>
-            </form>
+      
+      <div class="row">
+        {% for ability in abilities %}
+          <div class="col s12 m12 l4">
+            <h4>{{ ability }}</h4> 
+            {% for endgame in endgames %}
+              {% if ability in endgame %}
+              <ul class="collection" >
+                <li class="collection-item avatar white-text" style="background-color: #16574B">
+                  {% if endgame[0]|int <= 3 %}
+                    <img src="static/resources/pawnWhite.png" alt="" class="circle">
+                  {% elif endgame[0]|int <= 6 %}
+                    <img src="static/resources/queenWhite.png" alt="" class="circle">
+                  {% elif endgame[0]|int <= 9 %}
+                    <img src="static/resources/rookWhite.png" alt="" class="circle">
+                  {% else %}
+                    <img src="static/resources/knightWhite.png" alt="" class="circle">
+                  {% endif %}
+                  
+                  <p style="font-size: larger;">{{ endgame[1] }}</p>
+                  <a href="/play" class="secondary-content"><i class="material-icons" style="color: #c50">play_arrow</i></a>
+                </li>
+              </ul>
+              {% endif %}
+            {% endfor %}
           </div>
-          <div class="col s3 m4 l4 offset-l1 offset-m1 offset-s2">
-            <br><br><br><br><br><br><br><br><br><br>
-            <div class="row">
-              <a href="playingPageWhite.html" id="hello" class="btn button2">Create Room</a>
-            </div>
-          </div>
-        </div>
+          
+        {% endfor %}
+
+
         
       </div>
+      
+
       
     </div>
 
@@ -94,20 +74,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
         M.AutoInit()
-    </script>
-    <script>
-
-      function countChars(obj){
-          var maxLength = 20;
-          var strLength = obj.value.length;
-          
-          if(strLength > maxLength){
-              document.getElementById("charNum").innerHTML = '<span style="color: red;">'+strLength+' out of '+maxLength+' characters</span>';
-          }else{
-              document.getElementById("charNum").innerHTML = strLength+' out of '+maxLength+' characters';
-          }
-      }
-        
     </script>
   </body>
 </html>
