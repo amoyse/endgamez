@@ -14,6 +14,10 @@ let turn = white;
 
 let checked = "";
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function colAndRowFromId(id) {
     let [letter, number] = id.split("");
     let col = parseInt(letter.charCodeAt(0)) - 96;
@@ -25,6 +29,24 @@ function idFromColAndRow(col, row) {
     let colLetter = String.fromCharCode(col + 96);
     let id = colLetter + String(row);
     return id;
+}
+
+async function playNextMove(fen) {
+
+    let fenKey = {"fen": fen};
+    let response = await fetch("/api/nextMove", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(fenKey)
+    });
+    
+    let data = await response.json();
+    let uciMove = data["a"]
+    
+    await sleep(500);
+    board.moveFromUCI(uciMove);
+    board.draw();
+
 }
 
 
@@ -147,13 +169,35 @@ class Board {
         this.setTurn();
     }
     
+    moveFromUCI(uci) {
+        let from = uci[0] + uci[1]
+        let to = uci[2] + uci[3]
+        let fromPiece = this.pieceAtId(from);
+        let pieceToTake = this.pieceAtId(to);
+        if (pieceToTake.pieceCode != '') {
+            taken.push([pieceToTake.piece, pieceToTake.colour]);
+        }
+        this.setPieceAtId(to, fromPiece);
+        this.setPieceAtId(from, new Blank());
+
+        let fromDiv = document.getElementById(from);
+        let toDiv = document.getElementById(to);
+
+        turn = white;
+        this.setTurn()
+
+        // fromDiv.classList.add("movedFrom");
+        // toDiv.classList.add("movedTo");
+    }
+    
+
+    
     boardToFEN() {
         let fen = "";
         let piecePlacement = "";
         let move = "";
         for (let i = 0; i < this.chessboard.length; i++) {
-            let row = this.chessboard[i];
-            let blankInARow = 0;
+            let row = this.chessboard[i]; let blankInARow = 0;
             let rank = "";
             for (let j = 0; j < row.length; j++) {
                 if (row[j].piece == "blank") {
@@ -260,6 +304,7 @@ class Board {
                 turnElement.innerHTML = "White to Move";
             } else {
                 turnElement.innerHTML = "Black to Move";
+                this.autoPlayMove();
             }
         } else {
             if (turn == white) {
@@ -269,6 +314,20 @@ class Board {
             }
         }
         
+    }
+
+    autoPlayMove() {
+        let newFen = playNextMove(this.boardToFEN());
+    }
+
+    resetsquares() {
+        for (let i = 0; i < this.chessboard.length; i++) {
+            let row = this.chessboard[i];
+
+            for (let j = 0; j < row.length; j++) {
+
+            }
+        }
     }
 
     checkCheckCheck() {

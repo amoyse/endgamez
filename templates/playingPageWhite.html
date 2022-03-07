@@ -17,7 +17,7 @@
     
   </head>
 
-  <body style="background-color: #0C1E1E;">
+  <body style="background-color: #0C1E1E;" onload="generateBoard()">
     <nav class="z-depth-0">
       <div class="nav-wrapper" style="background-color: #0C1E1E">
         <div class="row">
@@ -112,7 +112,11 @@
         <div style="background-color: #233D34;" class="card">
           <div class="row">
             <div class="center-align">
-              <h5 class="white-text" id="turnToMove" style=" padding-top: 2vh; padding-bottom: 2vw;">White to Move</h5>
+              <h4 class="white-text"style=" padding-top: 2vh">{{ playingEndgame[1] }}</h4>
+              <h5 class="white-text" id="turnToMove" style=" padding-top: 2vh; padding-bottom: 1vw;">White to Move</h5>
+              {% if playingEndgame[4] != -1 %}
+                <h6 class="white-text"style="padding-bottom: 1vw;">{{ playingEndgame[4] }} moves until mate</h6>
+              {% endif %}
               <div class="row" style="padding-bottom: 5%;">
                 <div class="col s12 m2 l2 offset-l3 offset-m2">
                   <a class="btn button2 waves-effect waves-light">Hint?</a>
@@ -124,14 +128,6 @@
               <div class="row">
                 <div class="center-align">
                   <a class="btn lighten-1 waves-effect waves-light button1">Restart</a>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col s6 m3 l3 offset-l2 offset-m2">
-                  <a class="btn grey darken-1 waves-effect waves-light" style="width: 100%;"><</a>
-                </div>
-                <div class="col s6 m3 l3 offset-l1">
-                  <a class="btn grey darken-1 waves-effect waves-light" style="width: 100%;">></a>
                 </div>
               </div>
             </div>
@@ -154,6 +150,12 @@
     <!-- <script src="jquery-3.6.0.js"></script> -->
     <script>
         M.AutoInit()
+    </script>
+    <script>
+      function generateBoard() {
+        board.fenToBoard("{{ fen }}")
+        board.draw()
+      }
     </script>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>>
