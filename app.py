@@ -71,11 +71,17 @@ def fetchFromLila(fen, starting=False):
 
     jason = r.json() 
 
-    if len(jason["moves"]) > 0:
-        uciMove = jason["moves"][0]["uci"]
-    else:
+    if jason["category"] == "draw":
+        if len(jason["moves"]) == 0:
+            uciMove = "Thispositionisstalemate!!"
+        else:
+            uciMove = jason["moves"][0]["uci"] + "draw"
+    elif len(jason["moves"]) == 0:
         uciMove = -1
+    else:
+        uciMove = jason["moves"][0]["uci"]
 
+    
     if starting:
         moveCount = jason["dtm"]
     else:

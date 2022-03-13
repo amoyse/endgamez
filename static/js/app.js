@@ -1,4 +1,4 @@
-import swal from "sweetalert";
+// const { default: swal } = require("sweetalert");
 
 const black = "black"
 const white = "white";
@@ -15,6 +15,8 @@ let taken = [];
 let turn = white;
 
 let checked = "";
+
+
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -34,7 +36,7 @@ function idFromColAndRow(col, row) {
 }
 
 async function playNextMove(fen) {
-    // console.log(fen);
+    // console.log(zfen);
 
     let fenKey = {"fen": fen};
     let response = await fetch("/api/nextMove", {
@@ -52,7 +54,43 @@ async function playNextMove(fen) {
         moveCount = Math.floor(moveCount / 2) + 1
     }
     
-    if (uciMove != -1) {
+    if (uciMove == -1) {
+        await sleep(400);
+        swal({
+            title: "Checkmate!",
+            text: "You have won this endgame position",
+            icon: "success",
+            buttons: {
+                back: {
+                    text: "Go back",
+                    value: "back"
+                },
+                again: {
+                    text: "Play again",
+                    value: "again",
+                }
+            }
+        }).then((value) => {
+            if (value == "again") {
+                window.location.reload();
+            }
+            else if (value == "back") {
+                window.history.back();
+            }
+        })
+    } else if (uciMove.length > 6) {
+        if (uciMove.length < 15) {
+            await sleep(400);
+            board.moveFromUCI(uciMove);
+            board.draw();
+        }
+        await sleep(300);
+        swal("Draw!", "This position is drawn... play again?").then((playAgain) => {
+            if (playAgain) {
+               window.location.reload(); 
+            }
+        });
+    } else {
         await sleep(400);
         board.moveFromUCI(uciMove);
         board.draw();
@@ -63,8 +101,9 @@ async function playNextMove(fen) {
         } else {
             document.getElementById("moveCounter").innerHTML = moveCount + " moves until mate";
         }
-    } 
+    }
 }
+
 
 async function getHint() {
 
@@ -86,7 +125,7 @@ async function getHint() {
     let fromPiece = board.pieceAtId(from);
     let pieceToTake = board.pieceAtId(to);
     if (pieceToTake.pieceCode != '') {
-        hint = `Move your ${fromPiece.piece} from ${from} to ${to} and take ${pieceToTake}`;
+        hint = `Move your ${fromPiece.piece} from ${from} to ${to} and take their ${pieceToTake.piece}`;
     } else {
         hint = `Move your ${fromPiece.piece} from ${from} to ${to}`;
     }
@@ -144,7 +183,8 @@ class Player {
                 }
             }
         }
-    }
+     }
+    
 
 }
 
@@ -1445,7 +1485,6 @@ for (let i = 0; i < 8; i++) {
     }
     chessboard.push(row);
 }
-
 
 
 const board = new Board(chessboard);
