@@ -27,6 +27,18 @@
         </div>
       </div>
     </nav>
+    
+  <!-- Hint modal -->
+    <div id="modal1" class="modal">
+      <div class="modal-content">
+        <h4>Hint</h4>
+        <p id="hintArea">A bunch of text</p>
+      </div>
+      <div class="modal-footer">
+        <a class="modal-close waves-effect waves-green btn-flat">Ok</a>
+      </div>
+    </div>
+
 
     <br><br><br>
 
@@ -114,20 +126,22 @@
             <div class="center-align">
               <h4 class="white-text"style=" padding-top: 2vh">{{ playingEndgame[1] }}</h4>
               <h5 class="white-text" id="turnToMove" style=" padding-top: 2vh; padding-bottom: 1vw;">White to Move</h5>
-              {% if playingEndgame[4] != -1 %}
-                <h6 class="white-text"style="padding-bottom: 1vw;">{{ playingEndgame[4] }} moves until mate</h6>
+              {% if moveCount == 1 %}
+                <h6 class="white-text" id="moveCounter" style="padding-bottom: 1vw;">{{ moveCount }} move until mate</h6>
+              {% else %}
+                <h6 class="white-text" id="moveCounter" style="padding-bottom: 1vw;">{{ moveCount }} moves until mate</h6>
               {% endif %}
               <div class="row" style="padding-bottom: 5%;">
                 <div class="col s12 m2 l2 offset-l3 offset-m2">
-                  <a class="btn button2 waves-effect waves-light">Hint?</a>
+                  <a class="btn button2 waves-effect waves-light modal-trigger" id="hint" href="#modal1" onclick="getHint()">Hint?</a>
                 </div>
                 <div class="col s12 m2 l2 offset-l1 offset-m1">
-                  <a class="btn button2 waves-effect waves-light">Solve</a>
+                  <a class="btn button2 waves-effect waves-light" id="solve">Solve</a>
                 </div>
               </div>
               <div class="row">
                 <div class="center-align">
-                  <a class="btn lighten-1 waves-effect waves-light button1">Restart</a>
+                  <a href="javascript:window.location.href=window.location.href" class="btn lighten-1 waves-effect waves-light button1">Restart</a>
                 </div>
               </div>
             </div>
@@ -158,6 +172,12 @@
       }
     </script>
 
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var elems = document.querySelectorAll('.modal');
+      });
+    </script>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   </body>
 </html>
