@@ -1,3 +1,5 @@
+import swal from "sweetalert";
+
 const black = "black"
 const white = "white";
 
@@ -32,6 +34,7 @@ function idFromColAndRow(col, row) {
 }
 
 async function playNextMove(fen) {
+    // console.log(fen);
 
     let fenKey = {"fen": fen};
     let response = await fetch("/api/nextMove", {
@@ -42,11 +45,70 @@ async function playNextMove(fen) {
     
     let data = await response.json();
     let uciMove = data["a"]
+    let moveCount = data["b"]
+    if (moveCount % 2 == 0) {
+        moveCount = Math.floor(moveCount / 2)
+    } else {
+        moveCount = Math.floor(moveCount / 2) + 1
+    }
     
-    await sleep(500);
-    board.moveFromUCI(uciMove);
-    board.draw();
+    if (uciMove != -1) {
+        await sleep(400);
+        board.moveFromUCI(uciMove);
+        board.draw();
+        
+        if (moveCount == 1) {
+            document.getElementById("moveCounter").innerHTML = moveCount + " move until mate";
+            
+        } else {
+            document.getElementById("moveCounter").innerHTML = moveCount + " moves until mate";
+        }
+    } 
+}
 
+async function getHint() {
+
+    let fen = board.boardToFEN();
+    let fenKey = {"fen": fen};
+    let response = await fetch("/api/nextMove", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(fenKey)
+    });
+    
+    let data = await response.json();
+    let uci = data["a"]
+
+    let hint = "";
+
+    let from = uci[0] + uci[1]
+    let to = uci[2] + uci[3]
+    let fromPiece = board.pieceAtId(from);
+    let pieceToTake = board.pieceAtId(to);
+    if (pieceToTake.pieceCode != '') {
+        hint = `Move your ${fromPiece.piece} from ${from} to ${to} and take ${pieceToTake}`;
+    } else {
+        hint = `Move your ${fromPiece.piece} from ${from} to ${to}`;
+    }
+    displayHint(hint);
+}
+
+async function showSolution() {
+    let counter = document.getElementById("moveCounter").innerHTML[0].split();
+    let moves = parseInt(counter[0]);
+    let whileCount = 0;
+    while (moves > 0 && whileCount < 20) {
+        await playNextMove(board.boardToFEN());
+        counter = document.getElementById("moveCounter").innerHTML[0].split();
+        moves = parseInt(counter[0]);
+        whileCount++;
+    }
+}
+
+
+function displayHint(hint) {
+    hintArea = document.getElementById("hintArea");
+    hintArea.innerHTML = hint;
 }
 
 
@@ -183,11 +245,15 @@ class Board {
         let fromDiv = document.getElementById(from);
         let toDiv = document.getElementById(to);
 
-        turn = white;
+        if (turn == white) {
+            turn = black;
+        } else {
+            turn = white;
+        }
         this.setTurn()
 
-        // fromDiv.classList.add("movedFrom");
-        // toDiv.classList.add("movedTo");
+        // fromDiv.className = "movedFrom";
+
     }
     
 
@@ -307,6 +373,10 @@ class Board {
                 this.autoPlayMove();
             }
         } else {
+            document.getElementById("hint").style = "pointer-events: none";
+            document.getElementById("solve").style = "pointer-events: none";
+            let moveCounter = document.getElementById("moveCounter");
+            moveCounter.parentNode.removeChild(moveCounter);
             if (turn == white) {
                 turnElement.innerHTML = "Checkmate! Black Wins!";
             } else {
@@ -317,18 +387,19 @@ class Board {
     }
 
     autoPlayMove() {
-        let newFen = playNextMove(this.boardToFEN());
+        (this.playPromise ?? Promise.resolve()).then(() => {
+            this.playPromise = playNextMove(this.boardToFEN());
+        })
     }
 
-    resetsquares() {
-        for (let i = 0; i < this.chessboard.length; i++) {
-            let row = this.chessboard[i];
+    // resetSquares() {
+    //     for (let i = 0; i < this.chessboard.length; i++) {
+    //         let row = this.chessboard[i];
+    //         for (let j = 0; j < row.length; j++) {
 
-            for (let j = 0; j < row.length; j++) {
-
-            }
-        }
-    }
+    //         }
+    //     }
+    // }
 
     checkCheckCheck() {
         player1.setCheck(board);
@@ -1360,71 +1431,20 @@ const whiteKingUni = '&#9812;';
 const whitePawnUni = '&#9817;';
 
 
-// BLACK PIECES
-const blackPawn1 = new Pawn(black, blackPawnUni, pawn);
-const blackPawn2 = new Pawn(black, blackPawnUni, pawn);
-const blackPawn3 = new Pawn(black, blackPawnUni, pawn);
-const blackPawn4 = new Pawn(black, blackPawnUni, pawn);
-const blackPawn5 = new Pawn(black, blackPawnUni, pawn);
-const blackPawn6 = new Pawn(black, blackPawnUni, pawn);
-const blackPawn7 = new Pawn(black, blackPawnUni, pawn);
-const blackPawn8 = new Pawn(black, blackPawnUni, pawn);
-
-const blackRook1 = new Rook(black, blackRookUni, rook);
-const blackRook2 = new Rook(black, blackRookUni, rook);
-
-const blackKnight1 = new Knight(black, blackKnightUni, knight);
-const blackKnight2 = new Knight(black, blackKnightUni, knight);
-
-const blackBishop1 = new Bishop(black, blackBishopUni, bishop);
-const blackBishop2 = new Bishop(black, blackBishopUni, bishop);
-
-const blackQueen = new Queen(black, blackQueenUni, queen);
-const blackKing = new King(black, blackKingUni, king);
-
-
-// WHITE PIECES
-const whitePawn1 = new Pawn(white, whitePawnUni, pawn);
-const whitePawn2 = new Pawn(white, whitePawnUni, pawn);
-const whitePawn3 = new Pawn(white, whitePawnUni, pawn);
-const whitePawn4 = new Pawn(white, whitePawnUni, pawn);
-const whitePawn5 = new Pawn(white, whitePawnUni, pawn);
-const whitePawn6 = new Pawn(white, whitePawnUni, pawn);
-const whitePawn7 = new Pawn(white, whitePawnUni, pawn);
-const whitePawn8 = new Pawn(white, whitePawnUni, pawn);
-
-const whiteRook1 = new Rook(white, whiteRookUni, rook);
-const whiteRook2 = new Rook(white, whiteRookUni, rook);
-
-const whiteKnight1 = new Knight(white, whiteKnightUni, knight);
-const whiteKnight2 = new Knight(white, whiteKnightUni, knight);
-
-const whiteBishop1 = new Bishop(white, whiteBishopUni, bishop);
-const whiteBishop2 = new Bishop(white, whiteBishopUni, bishop);
-
-const whiteQueen = new Queen(white, whiteQueenUni, queen);
-const whiteKing = new King(white, whiteKingUni, king);
-
-// Blank piece
-const blank = new Blank();
-
-
 // Players
 const player1 = new Player(white);
 const player2 = new Player(black);
 
 
+let chessboard = [];
 
-
-let chessboard = [[blackRook1, blackKnight1, blackBishop1, blackQueen, blackKing, blackBishop2, blackKnight2, blackRook2], 
-                  [blackPawn1, blackPawn2, blackPawn3, blackPawn4, blackPawn5, blackPawn6, blackPawn7, blackPawn8], 
-                  [blank, blank ,blank, blank, blank, blank, blank, blank],
-                  [blank, blank ,blank, blank, blank, blank, blank, blank],
-                  [blank, blank ,blank, blank, blank, blank, blank, blank],
-                  [blank, blank ,blank, blank, blank, blank, blank, blank],
-                  [whitePawn1, whitePawn2, whitePawn3, whitePawn4, whitePawn5, whitePawn6, whitePawn7, whitePawn8],
-                  [whiteRook1, whiteKnight1, whiteBishop1, whiteQueen, whiteKing, whiteBishop2, whiteKnight2, whiteRook2] ];
-
+for (let i = 0; i < 8; i++) {
+    let row = [];
+    for (let j = 0; j < 8; j++) {
+        row.push(new Blank());
+    }
+    chessboard.push(row);
+}
 
 
 

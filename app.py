@@ -4,6 +4,7 @@ from wtforms import StringField, SubmitField, PasswordField, BooleanField
 import requests
 import sqlite3
 import json
+import random
 
 app = Flask(__name__)
 app.secret_key = "KJHGLKJGjglkjhskdfjsJKHGk"
@@ -41,13 +42,49 @@ class Endgames:
         conn.close()
 
         return endgames
+
+    def getNameFromId(self, id):
+        conn = sqlite3.connect("database.db")
+        c = conn.cursor()
+
+        name = c.execute("SELECT NAME FROM ENDGAMES WHERE ENDGAME_ID=(?)", (id,)).fetchall()
+
+        conn.commit()
+        conn.close()
+
+        name = str(name[0])
+
+        name = name.replace('(', '')
+        name = name.replace(')', '')
+        name = name.replace("'", '')
+        name = name.replace(',', '')
+        return name
             
     
-def fetchFromLila(fen):
+def fetchFromLila(fen, starting=False):
     r = requests.get(f"http://tablebase.lichess.ovh/standard?fen={fen}")
-    stanley = r.json()
-    uciMove = stanley["moves"][0]["uci"]
-    return uciMove
+
+    if r.status_code != 200:
+        return {
+            error: "lichess API failure"
+        }
+
+    jason = r.json() 
+
+    if len(jason["moves"]) > 0:
+        uciMove = jason["moves"][0]["uci"]
+    else:
+        uciMove = -1
+
+    if starting:
+        moveCount = jason["dtm"]
+    else:
+        if len(jason["moves"]) > 0:
+            moveCount = jason["moves"][0]["dtm"]
+        else:
+            moveCount = 0
+
+    return uciMove, moveCount
 
 
 
@@ -76,16 +113,24 @@ def endgameSelect():
     endgames = endgamePage.fetchEndgames(abilities)
     return render_template("newRoomWhite.html", endgames=endgames, abilities=abilities)
 
-@app.route("/play")
 @app.route("/play/<endgameName>")
 def playingPage(endgameName=None):
     if endgameName is not None:
-        endgames = Endgames()
-        fen = endgames.getFEN(endgameName)
-        abilities = session.get("abilities", None)
-        if abilities is None:
-            return redirect(url_for("home"))
         endgamePage = Endgames()
+        if endgameName == "random":
+            endgameId = random.randint(1, 12)
+            endgameName = endgamePage.getNameFromId(endgameId)
+            abilities = ["Beginner", "Intermediate", "Advanced"]
+        else:
+            abilities = session.get("abilities", None)
+            if abilities is None:
+                return redirect(url_for("home"))
+        fen = endgamePage.getFEN(endgameName)
+        uciMove, moveCount = fetchFromLila(fen, True)
+        if moveCount % 2 == 0:
+           moveCount = moveCount // 2
+        else:
+            moveCount = (moveCount // 2) + 1 
         endgames = endgamePage.fetchEndgames(abilities)
         playingEndgame = []
         for i in endgames:
@@ -93,12 +138,12 @@ def playingPage(endgameName=None):
                 playingEndgame = i
     else:
         fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_-_-_0_1"
-    return render_template("playingPageWhite.html", fen=fen, playingEndgame=playingEndgame) 
+    return render_template("playingPageWhite.html", fen=fen, playingEndgame=playingEndgame, moveCount=moveCount) 
 
 @app.route("/api/nextMove", methods=["POST"])
 def nextMove():
     fen = request.json["fen"]
-    uciMove = fetchFromLila(fen)
-    return {"a": uciMove}
+    uciMove, moveCount = fetchFromLila(fen)
+    return {"a": uciMove, "b": moveCount}
     
     
