@@ -33,6 +33,8 @@
       <div class="modal-content">
         <h4>Hint</h4>
         <p id="hintArea">A bunch of text</p>
+        <br><br>
+        <img src="{{ url_for('static', filename='resources/chessboardWithGrid.png') }}" alt="">
       </div>
       <div class="modal-footer">
         <a class="modal-close waves-effect waves-green btn-flat">Ok</a>
@@ -136,7 +138,7 @@
                   <a class="btn button2 waves-effect waves-light modal-trigger" id="hint" href="#modal1" onclick="getHint()">Hint?</a>
                 </div>
                 <div class="col s12 m2 l2 offset-l1 offset-m1">
-                  <a class="btn button2 waves-effect waves-light" id="solve">Solve</a>
+                  <a class="btn button2 waves-effect waves-light" id="solve" onclick="showSolution()">Solve</a>
                 </div>
               </div>
               <div class="row">

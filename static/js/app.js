@@ -35,8 +35,7 @@ function idFromColAndRow(col, row) {
     return id;
 }
 
-async function playNextMove(fen) {
-    // console.log(zfen);
+async function playNextMove(fen, showSolution=false) {
 
     let fenKey = {"fen": fen};
     let response = await fetch("/api/nextMove", {
@@ -55,33 +54,60 @@ async function playNextMove(fen) {
     }
     
     if (uciMove == -1) {
-        await sleep(400);
-        swal({
-            title: "Checkmate!",
-            text: "You have won this endgame position",
-            icon: "success",
-            buttons: {
-                back: {
-                    text: "Go back",
-                    value: "back"
-                },
-                again: {
-                    text: "Play again",
-                    value: "again",
+        if (showSolution) {
+            await sleep(400);
+            swal({
+                title: "Checkmate!",
+                text: "This endgame position has been completed",
+                icon: "success",
+                buttons: {
+                    back: {
+                        text: "Back to endgames",
+                        value: "back"
+                    },
+                    again: {
+                        text: "Try to solve",
+                        value: "again",
+                    }
                 }
-            }
-        }).then((value) => {
-            if (value == "again") {
-                window.location.reload();
-            }
-            else if (value == "back") {
-                window.history.back();
-            }
-        })
+            }).then((value) => {
+                if (value == "again") {
+                    window.location.reload();
+                }
+                else if (value == "back") {
+                    window.history.back();
+                }
+            })
+        } else {
+            await sleep(400);
+            swal({
+                title: "Checkmate!",
+                text: "You have won this endgame position",
+                icon: "success",
+                buttons: {
+                    back: {
+                        text: "Back to endgames",
+                        value: "back"
+                    },
+                    again: {
+                        text: "Play again",
+                        value: "again",
+                    }
+                }
+            }).then((value) => {
+                if (value == "again") {
+                    window.location.reload();
+                }
+                else if (value == "back") {
+                    window.history.back();
+                }
+            })
+        }
+        
     } else if (uciMove.length > 6) {
         if (uciMove.length < 15) {
             await sleep(400);
-            board.moveFromUCI(uciMove);
+            board.moveFromUCI(uciMove, showSolution);
             board.draw();
         }
         await sleep(300);
@@ -92,9 +118,11 @@ async function playNextMove(fen) {
         });
     } else {
         await sleep(400);
-        board.moveFromUCI(uciMove);
+        board.moveFromUCI(uciMove, showSolution);
         board.draw();
         
+        if (turn == black) {return;}
+
         if (moveCount == 1) {
             document.getElementById("moveCounter").innerHTML = moveCount + " move until mate";
             
@@ -133,14 +161,13 @@ async function getHint() {
 }
 
 async function showSolution() {
-    let counter = document.getElementById("moveCounter").innerHTML[0].split();
-    let moves = parseInt(counter[0]);
-    let whileCount = 0;
-    while (moves > 0 && whileCount < 20) {
-        await playNextMove(board.boardToFEN());
-        counter = document.getElementById("moveCounter").innerHTML[0].split();
-        moves = parseInt(counter[0]);
-        whileCount++;
+
+    let counter = document.getElementById("moveCounter").innerHTML.split(" ")[0];
+    let moves = parseInt(counter);
+    while (moves > 0) {
+        await playNextMove(board.boardToFEN(), true);
+        await playNextMove(board.boardToFEN(), true);
+        moves--;
     }
 }
 
@@ -271,7 +298,7 @@ class Board {
         this.setTurn();
     }
     
-    moveFromUCI(uci) {
+    moveFromUCI(uci, showSolution=false) {
         let from = uci[0] + uci[1]
         let to = uci[2] + uci[3]
         let fromPiece = this.pieceAtId(from);
@@ -290,9 +317,8 @@ class Board {
         } else {
             turn = white;
         }
-        this.setTurn()
-
-        // fromDiv.className = "movedFrom";
+        this.checkForPromotion(to)
+        this.setTurn(false, showSolution)
 
     }
     
@@ -403,14 +429,16 @@ class Board {
         this.chessboard[8 - row][col - 1] = value;
     }
 
-    setTurn(checkmate=false) {
+    setTurn(checkmate=false, showSolution=false) {
         let turnElement = document.getElementById("turnToMove");
         if (!checkmate) {
             if (turn == white) {
                 turnElement.innerHTML = "White to Move";
             } else {
                 turnElement.innerHTML = "Black to Move";
-                this.autoPlayMove();
+                if (!showSolution) {
+                    this.autoPlayMove();
+                }   
             }
         } else {
             document.getElementById("hint").style = "pointer-events: none";
