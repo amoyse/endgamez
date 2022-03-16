@@ -64,11 +64,24 @@
                 </label>
               </p>
               <div class="row">
-                  <input type="submit" href="/select-endgame" class="btn button2">
-                  <span>Show endgames</span>
+                  <button type="submit" href="/select-endgame" class="btn button2">Show endgames</button>
               </div>
             </form>
           </div>
+
+          <div class="center-align">
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                {% for message in messages %}
+                <div class="card-panel white-text" style="background-color: rgb(201, 93, 15);">
+                  {{message}}
+                </div>
+              {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% block body %}{% endblock %}
+          </div>
+            
 
         </div>
         
@@ -83,7 +96,7 @@
 
           <div class="row">
             <br><br><br><br><br><br><br>
-            <a href="/playing" class="btn-large button2">Play Now</a>
+            <a href="/play/random" class="btn-large button2">Random</a>
           </div>
 
         </div>
