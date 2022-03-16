@@ -28,18 +28,6 @@
       </div>
     </nav>
     
-  <!-- Hint modal -->
-    <div id="modal1" class="modal">
-      <div class="modal-content">
-        <h4>Hint</h4>
-        <p id="hintArea">A bunch of text</p>
-      </div>
-      <div class="modal-footer">
-        <a class="modal-close waves-effect waves-green btn-flat">Ok</a>
-      </div>
-    </div>
-
-
     <br><br><br>
 
     <div class="row">
@@ -133,7 +121,7 @@
               {% endif %}
               <div class="row" style="padding-bottom: 5%;">
                 <div class="col s12 m2 l2 offset-l3 offset-m2">
-                  <a class="btn button2 waves-effect waves-light modal-trigger" id="hint" href="#modal1" onclick="getHint()">Hint?</a>
+                  <a class="btn button2 waves-effect waves-light" id="hint" onclick="getHint()">Hint?</a>
                 </div>
                 <div class="col s12 m2 l2 offset-l1 offset-m1">
                   <a class="btn button2 waves-effect waves-light" id="solve" onclick="showSolution()">Solve</a>
@@ -178,12 +166,6 @@
         board.fenToBoard("{{ fen }}")
         board.draw()
       }
-    </script>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        var elems = document.querySelectorAll('.modal');
-      });
     </script>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
