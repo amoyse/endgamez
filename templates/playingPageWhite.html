@@ -33,8 +33,6 @@
       <div class="modal-content">
         <h4>Hint</h4>
         <p id="hintArea">A bunch of text</p>
-        <br><br>
-        <img src="{{ url_for('static', filename='resources/chessboardWithGrid.png') }}" alt="">
       </div>
       <div class="modal-footer">
         <a class="modal-close waves-effect waves-green btn-flat">Ok</a>
@@ -144,6 +142,14 @@
               <div class="row">
                 <div class="center-align">
                   <a href="javascript:window.location.href=window.location.href" class="btn lighten-1 waves-effect waves-light button1">Restart</a>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col s6 m6 l3 offset-l2">
+                  <a onclick="goBack();" id="backButton" class="btn waves-effect waves-light grey darken-2" style="padding-left: 3em; padding-right: 3em;"><</a>
+                </div>
+                <div class="col s6 m6 l3 offset-l1">
+                  <a onclick="goForward();" id="forwardButton" class="btn waves-effect waves-light grey darken-2" style="padding-left: 3em; padding-right: 3em;">></a>
                 </div>
               </div>
             </div>

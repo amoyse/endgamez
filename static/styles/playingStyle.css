@@ -39,7 +39,7 @@
     text-align: center;
 } */
 
-#chessboard > .white1, #chessboard > .black2, .highlighted {
+#chessboard > .white1, #chessboard > .black2, .highlighted{
     cursor: default;
 }
 
@@ -105,4 +105,13 @@
     height: 12.5%;
     font-size: 200%;
     line-height: 125%;
+}
+
+.movedHere {
+    /* background-color: #207c6b !important; */
+    border-color: #16574B;
+}
+
+.movedFrom {
+    background-color: #16574B !important; 
 }

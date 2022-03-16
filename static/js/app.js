@@ -10,13 +10,14 @@ const bishop = "bishop";
 const queen = "queen";
 const king = "king";
 
-
 let taken = [];
 let turn = white;
 
 let checked = "";
 
 
+let storedFens = [];
+let loadedFens = [];
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -73,6 +74,7 @@ async function playNextMove(fen, showSolution=false) {
             }).then((value) => {
                 if (value == "again") {
                     window.location.reload();
+
                 }
                 else if (value == "back") {
                     window.history.back();
@@ -162,19 +164,45 @@ async function getHint() {
 
 async function showSolution() {
 
+    document.getElementById("hint").style.pointerEvents = "none";
+    document.getElementById("solve").style.pointerEvents = "none";
+    document.getElementById("forwardButton").style.pointerEvents = "none";
+    document.getElementById("backButton").style.pointerEvents = "none";
     let counter = document.getElementById("moveCounter").innerHTML.split(" ")[0];
-    let moves = parseInt(counter);
-    while (moves > 0) {
+    let noOfMoves = parseInt(counter);
+    while (noOfMoves > 0) {
         await playNextMove(board.boardToFEN(), true);
         await playNextMove(board.boardToFEN(), true);
-        moves--;
+        noOfMoves--;
     }
+    document.getElementById("forwardButton").style.pointerEvents = "auto";
+    document.getElementById("backButton").style.pointerEvents = "auto";
 }
 
 
 function displayHint(hint) {
     hintArea = document.getElementById("hintArea");
     hintArea.innerHTML = hint;
+}
+
+function goBack() {
+    if (storedFens.length > 0) {
+        let fen = storedFens.pop();
+        let oldFen = board.boardToFEN();
+        board.fenToBoard(fen);
+        board.draw();
+        loadedFens.push(oldFen);
+    }
+}
+
+function goForward() {
+    if (loadedFens.length > 0) {
+        let fen = loadedFens.pop();
+        let oldFen = board.boardToFEN();
+        board.fenToBoard(fen);
+        board.draw();
+        storedFens.push(oldFen);
+    }
 }
 
 
@@ -211,8 +239,6 @@ class Player {
             }
         }
      }
-    
-
 }
 
 
@@ -229,7 +255,7 @@ class Board {
 
     fenToBoard(fen) {
     
-        let [piecePlacement, move, castling, enPassant, halfmove, fullmove] = fen.split("_"); // change to "_" -> using space for testing purposes
+        let [piecePlacement, move, castling, enPassant, halfmove, fullmove] = fen.split("_");
         let ranks = piecePlacement.split("/");
         for (let i = 0; i < ranks.length; i++ ) {
             let rank = ranks[i];
@@ -295,7 +321,7 @@ class Board {
         } else {
             turn = black;
         }
-        this.setTurn();
+        this.setTurn(false, true);
     }
     
     moveFromUCI(uci, showSolution=false) {
@@ -306,11 +332,14 @@ class Board {
         if (pieceToTake.pieceCode != '') {
             taken.push([pieceToTake.piece, pieceToTake.colour]);
         }
+
+        storedFens.push(this.boardToFEN());
+
         this.setPieceAtId(to, fromPiece);
         this.setPieceAtId(from, new Blank());
 
-        let fromDiv = document.getElementById(from);
-        let toDiv = document.getElementById(to);
+        // let fromDiv = document.getElementById(from);
+        // let toDiv = document.getElementById(to);
 
         if (turn == white) {
             turn = black;
@@ -319,6 +348,7 @@ class Board {
         }
         this.checkForPromotion(to)
         this.setTurn(false, showSolution)
+        this.resetSquares();
 
     }
     
@@ -460,14 +490,18 @@ class Board {
         })
     }
 
-    // resetSquares() {
-    //     for (let i = 0; i < this.chessboard.length; i++) {
-    //         let row = this.chessboard[i];
-    //         for (let j = 0; j < row.length; j++) {
-
-    //         }
-    //     }
-    // }
+    resetSquares() {
+        for (let i = 0; i < this.chessboard.length; i++) {
+            let row = this.chessboard[i];
+            for (let j = 0; j < row.length; j++) {
+                let id = idFromColAndRow(j + 1, 8 - i);
+                let div = document.getElementById(id);
+                if (div.className != "white1" && div.className != "black2") {
+                    this.resetSquareColour(div);
+                }
+            }
+        }
+    }
 
     checkCheckCheck() {
         player1.setCheck(board);
@@ -852,9 +886,12 @@ class Board {
         for (let i = 0; i < this.highlightedSquares.length; i++) {
             if (col == this.highlightedSquares[i][0] && row == this.highlightedSquares[i][1]) {
                 
+                storedFens.push(this.boardToFEN());
+                loadedFens = [];
                 let piece = this.pieceAtId(from);
                 this.setPieceAtId(to, piece);
                 this.setPieceAtId(from, new Blank());
+                
 
                 this.highlightedPiece = "";
                 
@@ -894,11 +931,13 @@ class Board {
     takePiece(id) {
         let piece = this.pieceAtId(this.highlightedPiece);
         if (document.getElementById(id).className == "takeable") {
+            storedFens.push(this.boardToFEN());
             let pieceToTake = this.pieceAtId(id);
-            taken.push([pieceToTake.piece, pieceToTake.colour]); // it doesn't matter which knight (for example) the piece is, we just need to know where it is and what piece it is
+            taken.push([pieceToTake.piece, pieceToTake.colour]);// it doesn't matter which knight (for example) the piece is, we just need to know where it is and what piece it is
             this.setPieceAtId(id, piece);
             this.setPieceAtId(this.highlightedPiece, new Blank());
             this.highlightedPiece = "";
+            
             
             if (turn == white) {
                 turn = black;
