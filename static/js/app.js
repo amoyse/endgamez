@@ -177,6 +177,7 @@ async function showSolution() {
     }
     document.getElementById("forwardButton").style.pointerEvents = "auto";
     document.getElementById("backButton").style.pointerEvents = "auto";
+    document.getElementById("moveCounter").innerHTML =  "0 moves until mate";
 }
 
 
@@ -311,10 +312,8 @@ class Board {
                     }
                     
                     col++;
-                    
                 }
             }
-    
         }
         if (move == "w") {
             turn = white;
@@ -333,13 +332,13 @@ class Board {
             taken.push([pieceToTake.piece, pieceToTake.colour]);
         }
 
-        storedFens.push(this.boardToFEN());
+        if (turn != black) {
+            storedFens.push(this.boardToFEN());
+        }
 
         this.setPieceAtId(to, fromPiece);
         this.setPieceAtId(from, new Blank());
 
-        // let fromDiv = document.getElementById(from);
-        // let toDiv = document.getElementById(to);
 
         if (turn == white) {
             turn = black;
@@ -352,7 +351,6 @@ class Board {
 
     }
     
-
     
     boardToFEN() {
         let fen = "";
@@ -418,7 +416,6 @@ class Board {
         
         fen = piecePlacement + "_" + move + "_-_-_0_1"
         return fen;
-
     }
 
 
@@ -699,6 +696,7 @@ class Board {
 
 
     selectPiece(div) {
+        if (turn == black) {return};
 
         this.checkCheckCheck();
 
