@@ -12,7 +12,15 @@ app.secret_key = "KJHGLKJGjglkjhskdfjsJKHGk"
 class Endgames:
 
     def getFEN(self, name):
-        conn = sqlite3.connect("database.db")
+        """ This function takes the name of an Endgame position and fetches the FEN stored in the database for that endgame
+
+        Args:
+            name (string): 
+
+        Returns:
+            string: the Forsyth Edwards Notation description of a position on the board
+        """
+        conn = sqlite3.connect("database.db") # connects to the database
         c = conn.cursor()
 
         fen = c.execute("SELECT FEN FROM ENDGAMES WHERE NAME=(?)", (name,)).fetchall()
@@ -22,6 +30,7 @@ class Endgames:
 
         fen = str(fen[0])
 
+        # turn it into a proper readable FEN
         fen = fen.replace('(', '')
         fen = fen.replace(')', '')
         fen = fen.replace("'", '')
@@ -30,6 +39,14 @@ class Endgames:
 
 
     def fetchEndgames(self, abilities): # select items from the database depending on what ability level(s) they selected
+        """This function fetches a list of all the information of all the endgames which are stored under that ability level in the database
+
+        Args:
+            abilities (tuple): tuple of the ability levels selected by the user which they want to see endgames for
+
+        Returns:
+            2-D array: contains all the information about the selected endgames in a 2-D array
+        """
         conn = sqlite3.connect("database.db")
         c = conn.cursor()
         endgames = []
@@ -44,6 +61,14 @@ class Endgames:
         return endgames
 
     def getNameFromId(self, id):
+        """Fetches the name of an endgame based on the endgame_id
+
+        Args:
+            id (int): endgame_id of an endgame position
+
+        Returns:
+            string: the name of the endgame
+        """
         conn = sqlite3.connect("database.db")
         c = conn.cursor()
 
@@ -54,6 +79,7 @@ class Endgames:
 
         name = str(name[0])
 
+        # turns the name into a normal string
         name = name.replace('(', '')
         name = name.replace(')', '')
         name = name.replace("'", '')
@@ -62,8 +88,21 @@ class Endgames:
             
     
 def fetchFromLila(fen, starting=False):
+    """Contacts the lichess tablebase api and fetches the best move and the number of moves until 
+    mate after inputting the current position FEN
+
+    Args:
+        fen (string): the description of the current state of the board using Forsyth Edwards' Notation
+        starting (bool, optional): Changes where the method takes data from in the json 
+        file depending on if the game has just started. Defaults to False.
+
+    Returns:
+        string: uciMove is a string of two square locations on the board, showing where a piece should move from and to
+        integer: moveCount is the number of moves left until mate (if applicable)
+    """
     r = requests.get(f"http://tablebase.lichess.ovh/standard?fen={fen}")
 
+    # catches errors
     if r.status_code != 200:
         return {
             error: "lichess API failure"
@@ -71,6 +110,7 @@ def fetchFromLila(fen, starting=False):
 
     jason = r.json() 
 
+    # checks for stalemate, draw, lost position and won position
     if jason["category"] == "draw":
         if len(jason["moves"]) == 0:
             uciMove = "Thispositionisstalemate!!"
@@ -82,6 +122,7 @@ def fetchFromLila(fen, starting=False):
         uciMove = jason["moves"][0]["uci"]
 
     
+    # finds the number of moves until mate (if applicable)
     if starting:
         moveCount = jason["dtm"]
     else:
@@ -96,6 +137,11 @@ def fetchFromLila(fen, starting=False):
 
 @app.route("/", methods=["GET", "POST"])
 def home():
+    """The home route, displays the home page template
+
+    Returns:
+        template: displays the html for the home page
+    """
     s = session.get("abilities", None)
     if s is not None:
         del session["abilities"]
@@ -112,6 +158,11 @@ def home():
 
 @app.route("/select-endgame", methods=["GET", "POST"])
 def endgameSelect():
+    """The select-endgame route, displays the endgame selection page
+
+    Returns:
+        template: displays the html for the endgame selection page
+    """
     abilities = session.get("abilities", None)
     if abilities is None:
         return redirect(url_for("home"))
@@ -121,6 +172,17 @@ def endgameSelect():
 
 @app.route("/play/<endgameName>")
 def playingPage(endgameName=None):
+    """The playing route, displays the page for playing the endgames and also checks if an ability 
+    level has been selected if endgameName does not equal random. Also halves the moveCount, as the 
+    api returns moves until mate for both white and black whereas moves for just white are needed
+
+    Args:
+        endgameName (string, optional): the name of the endgame to be played, used to fetch 
+        other information from database. Defaults to None.
+
+    Returns:
+        template: displays the html for the playing page
+    """
     if endgameName is not None:
         endgamePage = Endgames()
         if endgameName == "random":
@@ -148,6 +210,12 @@ def playingPage(endgameName=None):
 
 @app.route("/api/nextMove", methods=["POST"])
 def nextMove():
+    """The api between the frontend javascript code and backend python code. Calls the fetchFromLila() 
+    function to get the uciMove and moveCount then sends them to the frontend to be used
+
+    Returns:
+        dictionary: uciMove and moveCount contained in a small dictoinary for easy retrieval of data on the frontend
+    """
     fen = request.json["fen"]
     uciMove, moveCount = fetchFromLila(fen)
     return {"a": uciMove, "b": moveCount}
