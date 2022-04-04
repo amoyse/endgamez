@@ -1,3 +1,5 @@
+# Alex Moyse
+
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField
@@ -12,7 +14,8 @@ app.secret_key = "KJHGLKJGjglkjhskdfjsJKHGk"
 class Endgames:
 
     def getFEN(self, name):
-        """ This function takes the name of an Endgame position and fetches the FEN stored in the database for that endgame
+        """ This function takes the name of an Endgame position and 
+            fetches the FEN stored in the database for that endgame
 
         Args:
             name (string): 
@@ -38,11 +41,14 @@ class Endgames:
         return fen
 
 
-    def fetchEndgames(self, abilities): # select items from the database depending on what ability level(s) they selected
-        """This function fetches a list of all the information of all the endgames which are stored under that ability level in the database
+
+    def fetchEndgames(self, abilities): 
+        """This function fetches a list of all the information of all the endgames 
+            which are stored under that ability level in the database
 
         Args:
-            abilities (tuple): tuple of the ability levels selected by the user which they want to see endgames for
+            abilities (tuple): tuple of the ability levels selected by the user 
+            which they want to see endgames for
 
         Returns:
             2-D array: contains all the information about the selected endgames in a 2-D array
@@ -88,17 +94,21 @@ class Endgames:
             
     
 def fetchFromLila(fen, starting=False):
-    """Contacts the lichess tablebase api and fetches the best move and the number of moves until 
-    mate after inputting the current position FEN
+    """Contacts the lichess tablebase api and fetches the best move and the 
+        number of moves until mate after inputting the current position FEN
 
     Args:
-        fen (string): the description of the current state of the board using Forsyth Edwards' Notation
-        starting (bool, optional): Changes where the method takes data from in the json 
-        file depending on if the game has just started. Defaults to False.
+        fen (string): the description of the current state of the board using 
+        Forsyth Edwards' Notation 
+        
+        starting (bool, optional): Changes where the 
+        method takes data from in the json file depending on if the game has 
+        just started. Defaults to False.
 
     Returns:
-        string: uciMove is a string of two square locations on the board, showing where a piece should move from and to
-        integer: moveCount is the number of moves left until mate (if applicable)
+        string: uciMove is a string of two square locations on the board, showing 
+        where a piece should move from and to integer: moveCount is the number of 
+        moves left until mate (if applicable)
     """
     r = requests.get(f"http://tablebase.lichess.ovh/standard?fen={fen}")
 
@@ -172,9 +182,10 @@ def endgameSelect():
 
 @app.route("/play/<endgameName>")
 def playingPage(endgameName=None):
-    """The playing route, displays the page for playing the endgames and also checks if an ability 
-    level has been selected if endgameName does not equal random. Also halves the moveCount, as the 
-    api returns moves until mate for both white and black whereas moves for just white are needed
+    """The playing route, displays the page for playing the endgames 
+        and also checks if an ability level has been selected if endgameName 
+        does not equal random. Also halves the moveCount, as the api returns 
+        moves until mate for both white and black whereas moves for just white are needed
 
     Args:
         endgameName (string, optional): the name of the endgame to be played, used to fetch 
@@ -210,11 +221,13 @@ def playingPage(endgameName=None):
 
 @app.route("/api/nextMove", methods=["POST"])
 def nextMove():
-    """The api between the frontend javascript code and backend python code. Calls the fetchFromLila() 
-    function to get the uciMove and moveCount then sends them to the frontend to be used
+    """The api between the frontend javascript code and backend python code. 
+        Calls the fetchFromLila() function to get the uciMove and moveCount then 
+        sends them to the frontend to be used
 
     Returns:
-        dictionary: uciMove and moveCount contained in a small dictoinary for easy retrieval of data on the frontend
+        dictionary: uciMove and moveCount contained in a small dictoinary for 
+        easy retrieval of data on the frontend
     """
     fen = request.json["fen"]
     uciMove, moveCount = fetchFromLila(fen)

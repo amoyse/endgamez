@@ -1,3 +1,5 @@
+// Alex Moyse
+
 
 // colour constants
 const black = "black"
@@ -34,7 +36,8 @@ let turn = white;
 
 let checked = "";
 
-// two stacks, used for storing arrays of stored FENs and the current number of moves until mate
+// two stacks, used for storing arrays of stored FENs and the 
+// current number of moves until mate
 let storedFens = [];
 let loadedFens = [];
 
@@ -42,7 +45,7 @@ let loadedFens = [];
 
 /** 
 * A sleep function designed to wait a certain amount of time before returning.
-* @param {Integer} ms - The number of miliseconds the function will sleep for.
+* @param {Integer} ms - The number of milliseconds the function will sleep for.
 * @return {Promise} - Timeout function.
 */
 function sleep(ms) {
@@ -52,7 +55,8 @@ function sleep(ms) {
 
 
 /** 
-* Splits the id and converts the letter and number into the column and row umbers for use on the model.
+* Splits the id and converts the letter and number into the column 
+and row umbers for use on the model.
 * @param {String} id - A chess square id value, e.g. 'b6'.
 * @return {Array} - Array containing the values of col and row.
 */
@@ -80,11 +84,14 @@ function idFromColAndRow(col, row) {
 
 
 /** 
-* This function contacts the backend python flask server, sending an fen of the current state of the board. 
-* The response received is then used to play then next move, depending on what the result is. If uciMove == -1, then the function 
-* displays a graphic from SweetAlert, to let the user know the game is over and to give them the option to restart or go back. 
-* If a draw is deteced, then a graphic is displayed to tell the user. If a move is played (and showSolution is false), 
-* then the move counter is updated to the returned value from the flask server.
+* This function contacts the backend python flask server, sending an fen of the 
+* current state of the board. The response received is then used to play then 
+* next move, depending on what the result is. If uciMove == -1, then the function 
+* displays a graphic from SweetAlert, to let the user know the game is over and 
+* to give them the option to restart or go back. 
+* If a draw is deteced, then a graphic is displayed to tell the user. If a move is 
+* played (and showSolution is false), then the move counter is updated to the 
+* returned value from the flask server.
 * @summary Contacts the backend to get a move to play and plays it if necessary.
 * @param {String} fen - the FEN description of the current state of the board.
 * @param {Boolean} [showSolution=false] - tells the function whether it's being called for the 
@@ -105,8 +112,8 @@ async function playNextMove(fen, showSolution=false) {
     let uciMove = data["a"]
     let moveCount = data["b"]
     
-    // moveCount is number of moves for both black and white until mate, but just white's moves are needed
-    // so this splits moveCount in half to get white's moves
+    // moveCount is number of moves for both black and white until mate, but just 
+    // white's moves are needed so this splits moveCount in half to get white's moves
     if (moveCount % 2 == 0) {
         moveCount = Math.floor(moveCount / 2)
     } else {
@@ -117,11 +124,11 @@ async function playNextMove(fen, showSolution=false) {
     if (uciMove == -1) {
         if (showSolution) { 
 
-            // sleep for 400 miliseconds
+            // sleep for 400 milliseconds
             await sleep(400); 
 
-            // uses SweetAlert to display a graphic telling the user the position is completed
-            // gives option to try to solve it or go back to list of endgames
+            // uses SweetAlert to display a graphic telling the user the position is 
+            // completed gives option to try to solve it or go back to list of endgames
             swal({
                 title: "Checkmate!",
                 text: "This endgame position has been completed",
@@ -150,7 +157,8 @@ async function playNextMove(fen, showSolution=false) {
                 }
             });
 
-        // if showSolution was not used, congratulate the user for solving the position themselves
+        // if showSolution was not used, congratulate the user for solving 
+        // the position themselves
         } else {
             await sleep(400);
             swal({
@@ -184,15 +192,17 @@ async function playNextMove(fen, showSolution=false) {
     // if uciMove is longer than 6 characters, then the position is drawn
     } else if (uciMove.length > 6) {
         
-        // if uciMove is less than 15 characters then it is a draw and not a stalemate, so play another move
+        // if uciMove is less than 15 characters then it is a draw and 
+        // not a stalemate, so play another move
         if (uciMove.length < 15) {
             await sleep(400);
             board.moveFromUCI(uciMove, showSolution);
             board.draw();
         }
 
-        // if uciMove is longer than 15 characters the move isn't played (because a move cannot be played)
-        // then the draw graphic is shown, whether it is a draw or stalemate
+        // if uciMove is longer than 15 characters the move isn't played 
+        // (because a move cannot be played) then the draw graphic is shown, 
+        // whether it is a draw or stalemate
         await sleep(300);
         swal("Draw!", "This position is drawn... play again?").then((playAgain) => {
             if (playAgain) {
@@ -200,11 +210,13 @@ async function playNextMove(fen, showSolution=false) {
             }
         });
     
-    // if uciMove is any shorter than 6 characters, then it is a legal position and black can move
+    // if uciMove is any shorter than 6 characters, then it is a legal 
+    // position and black can move
     } else {
         await sleep(400);
         
-        // calls the move function using the uciMove and passing in the optional bool showSolution
+        // calls the move function using the uciMove and passing in the 
+        // optional bool showSolution
         board.moveFromUCI(uciMove, showSolution);
         board.draw();
         
@@ -225,10 +237,16 @@ async function playNextMove(fen, showSolution=false) {
 
 
 /** 
-* Contacts the flask server api/nextMove to get the next move that should be played, then highlights the piece to be 
-* moved and the square that it can move to.
+* Contacts the flask server api/nextMove to get the next move that should be played, 
+* then highlights the piece to be moved and the square that it can move to.
 */
 async function getHint() {
+
+    // disabling hint, solve, forward and back buttons
+    document.getElementById("hint").style.pointerEvents = "none";
+    document.getElementById("solve").style.pointerEvents = "none";
+    document.getElementById("forwardButton").style.pointerEvents = "none";
+    document.getElementById("backButton").style.pointerEvents = "none";
 
     // generates a description of the current state of the board in the form of a FEN
     let fen = board.boardToFEN();
@@ -246,19 +264,21 @@ async function getHint() {
     // receives the uci notation move to be played, e.g. "e6f5"
     let uci = data["a"]
 
-    // splitting the move into which square the piece comes from and where it should move to 
+    // splitting the move into which square the piece comes from and 
+    // where it should move to 
     let from = uci[0] + uci[1]
     let to = uci[2] + uci[3]
 
     let pieceToTake = board.pieceAtId(to);
 
-    // setting turn as null stops the user being able to move a piece while the hint is occuring
+    // setting turn as null stops the user being able to move a piece while 
+    // the hint is occuring
     let oldTurn = turn;
     turn = null;
     
-    
-    // if there is an actual piece on that square, make that square highlight orange as takeable
-    // as well as highlighting the piece to be moved in green
+    board.resetSquares();
+    // if there is an actual piece on that square, make that square highlight 
+    // orange as takeable as well as highlighting the piece to be moved in green
     if (pieceToTake.pieceCode != '') {
         board.selectSquare(document.getElementById(from), from);
         board.makeTakeable(document.getElementById(to))
@@ -267,29 +287,38 @@ async function getHint() {
         board.highlightSquare(document.getElementById(to))
     }
     
-    // wait for the user to see the highlighted squares, then reset the colour of all squares on the board so the hint disappears
+    // wait for the user to see the highlighted squares, then reset the 
+    // colour of all squares on the board so the hint disappears
     await sleep(800);
     board.resetSquares();
 
     // reset turn so that user can now move
     turn = oldTurn;
+
+    // re-enabling hint, solve, forward and back buttons
+    document.getElementById("hint").style.pointerEvents = "auto";
+    document.getElementById("solve").style.pointerEvents = "auto";    
+    document.getElementById("forwardButton").style.pointerEvents = "auto";
+    document.getElementById("backButton").style.pointerEvents = "auto";
 }
 
 
 
 /** 
-* Disables all buttons and gets the number of moves left until mate. Then, calls playNextMove() on the current state of the board
-* twice (for white AND black because moves until mate is just for white) for the number of moves left until mate. 
-* Then re-enables all buttons.
+* Disables all buttons and gets the number of moves left until mate. 
+* Then, calls playNextMove() on the current state of the board
+* twice (for white AND black because moves until mate is just for white) 
+* for the number of moves left until mate. Then re-enables all buttons.
 * @summary Repeatedly calls playNextMove until number of moves until mate == 0.
 */
 async function showSolution() {
 
-    // disabling hint, solve, forward and back buttons
+    // disabling hint, solve, forward and back buttons, and the entire chessboard
     document.getElementById("hint").style.pointerEvents = "none";
     document.getElementById("solve").style.pointerEvents = "none";
     document.getElementById("forwardButton").style.pointerEvents = "none";
     document.getElementById("backButton").style.pointerEvents = "none";
+    document.getElementById("chessboard").style.pointerEvents = "none";
     
     // gets the current number of moves until mate for white
     let counter = document.getElementById("moveCounter").innerHTML.split(" ")[0];
@@ -297,16 +326,18 @@ async function showSolution() {
 
     while (noOfMoves > 0) {
 
-        // calls playNextMove twice for white and black, using the current state of the board as one parameter, and true as another
-        // to tell playNextMove that it is being called from showSolution
+        // calls playNextMove twice for white and black, using the current state 
+        // of the board as one parameter, and true as another to tell playNextMove
+        // that it is being called from showSolution
         await playNextMove(board.boardToFEN(), true);
         await playNextMove(board.boardToFEN(), true);
         noOfMoves--;
     }
     
-    // re-enabling forward and back buttons (hint and solution no longer needed)
+    // re-enabling forward and back buttons, and the entire chessboard
     document.getElementById("forwardButton").style.pointerEvents = "auto";
     document.getElementById("backButton").style.pointerEvents = "auto";
+    document.getElementById("chessboard").style.pointerEvents = "auto";
     
     // making sure moveCounter says 0 moves until mate
     document.getElementById("moveCounter").innerHTML =  "0 moves until mate";
@@ -315,8 +346,10 @@ async function showSolution() {
 
 
 /** 
-* If there are enough items on the storedFens stack, takes top item off stack, notes current moves until mate then updates 
-* with new number. Then notes the current state of board and updates it to the new FEN. Then stores the noted values in loadedFens.
+* If there are enough items on the storedFens stack, takes top item off stack, 
+* notes current moves until mate then updates with new number. Then notes the 
+* current state of board and updates it to the new FEN. 
+* Then stores the noted values in loadedFens.
 */
 function goBack() {
     
@@ -324,12 +357,15 @@ function goBack() {
         let [fen, numberOfMoves] = storedFens.pop();
 
         // gets the current number of moves until mate from the moveCounter
-        let oldNumberOfMoves = parseInt(document.getElementById("moveCounter").innerHTML.split(" ")[0]);
+        let oldNumberOfMoves = parseInt(document.getElementById("moveCounter")
+                                            .innerHTML.split(" ")[0]);
 
         if (numberOfMoves == 1) {
-            document.getElementById("moveCounter").innerHTML = numberOfMoves + " move until mate";
+            document.getElementById("moveCounter").innerHTML = 
+                                        numberOfMoves + " move until mate";
         } else {
-            document.getElementById("moveCounter").innerHTML = numberOfMoves + " moves until mate";
+            document.getElementById("moveCounter").innerHTML = 
+                                        numberOfMoves + " moves until mate";
         }
 
         let oldFen = board.boardToFEN();
@@ -342,8 +378,9 @@ function goBack() {
 
 
 /** 
-* If there are enough items on the loadedFens stack, takes top item off stack, notes current moves until mate then updates 
-* with new number. Then notes current state of board and updates it to the new FEN. Then stores the noted values in storedFens.
+* If there are enough items on the loadedFens stack, takes top item off stack, 
+* notes current moves until mate then updates with new number. Then notes current 
+* state of board and updates it to the new FEN. Then stores the noted values in storedFens.
 */
 function goForward() {
 
@@ -351,13 +388,16 @@ function goForward() {
         let [fen, numberOfMoves] = loadedFens.pop();
         
         // gets the current number of moves until mate from the moveCounter
-        let oldNumberOfMoves = parseInt(document.getElementById("moveCounter").innerHTML.split(" ")[0]);
+        let oldNumberOfMoves = parseInt(document.getElementById("moveCounter")
+                                                .innerHTML.split(" ")[0]);
 
         if (numberOfMoves == 1) {
-            document.getElementById("moveCounter").innerHTML = numberOfMoves + " move until mate";
+            document.getElementById("moveCounter").innerHTML = 
+                                        numberOfMoves + " move until mate";
             
         } else {
-            document.getElementById("moveCounter").innerHTML = numberOfMoves + " moves until mate";
+            document.getElementById("moveCounter").innerHTML = 
+                                        numberOfMoves + " moves until mate";
         }
 
         let oldFen = board.boardToFEN();
@@ -379,9 +419,11 @@ class Player {
     }
 
     /** 
-    * Checks every piece in the chessboard to find the king and checks if it corresponds to the correct colour. 
-    * Then, checks if the king is in check and if it is, set inCheck to true, highlight the king as in check (unless temp == true) 
-    * and return true. Otherwise, set inCheck to false, make the king no loner highlighted to be in check and return false.
+    * Checks every piece in the chessboard to find the king and checks if 
+    * it corresponds to the correct colour. Then, checks if the king is in check 
+    * and if it is, set inCheck to true, highlight the king as in check (unless temp == true) 
+    * and return true. Otherwise, set inCheck to false, make the king 
+    * no longer highlighted to be in check and return false.
     * @summary Sets values to be in check and highlights king in check if it is.
     * @param {Object} board - An instantiation of the Board object
     * @param {Boolean} [temp=false] - Tells the function if check is being set temporarily or permanently
@@ -435,7 +477,6 @@ class Board {
     constructor(chessboard) {
         this.highlightedPiece = "";
         this.chessboard = chessboard;
-        this.boardDiv = document.getElementById("chessboard");
         this.highlightedSquares = [];
         this.takeableSquares = [];
         this.attackingPiece = "";
@@ -443,13 +484,14 @@ class Board {
 
 
     /** 
-    * Takes in an fen description of a board state, splits it up into rows on the board and translates it into 
-    * the state of the board on this.chessboard.
+    * Takes in an fen description of a board state, splits it up into rows on the 
+    * board and translates it into the state of the board on this.chessboard.
     * @param {String} fen - A description of the state of the board using Forsyth Edwards Notation.
     */
     fenToBoard(fen) {
     
-        // splits the fen into the description of the board and whose turn it is to move (the rest is discarded)
+        // splits the fen into the description of the board and whose turn it is 
+        // to move (the rest is discarded)
         let [piecePlacement, move, castling, enPassant, halfmove, fullmove] = fen.split("_");
         let ranks = piecePlacement.split("/");
         
@@ -528,9 +570,12 @@ class Board {
     
     
     /** 
-    * Takes a uci description of a move and uses it to move a piece, then updates the moveCounter and sets the turn.
-    * @param {String} uci - a two part description of the square from which a piece will move and the square it will move to.
-    * @param {Boolean} [showSolution=false] - tells the function whether it is being used in a solution (needed to pass into setTurn).
+    * Takes a uci description of a move and uses it to move a piece, then 
+    * updates the moveCounter and sets the turn.
+    * @param {String} uci - a two part description of the square from which a 
+    * piece will move and the square it will move to.
+    * @param {Boolean} [showSolution=false] - tells the function whether it is 
+    * being used in a solution (needed to pass into setTurn).
     */
     moveFromUCI(uci, showSolution=false) {
         
@@ -563,12 +608,12 @@ class Board {
             turn = white;
         }
 
-        // checks if pawn can be promoted, sets turn and resets the colours of all squares on the board
+        // checks if pawn can be promoted, sets turn and resets the colours of 
+        // all squares on the board
         this.checkForPromotion(to)
         this.setTurn(false, showSolution)
         this.resetSquares();
     }
-    
     
     
     /** 
@@ -595,7 +640,8 @@ class Board {
                     }
                 } else {
                     
-                    // if piece isn't blank and blankInARow is bigger than 0 (ie there has been some blank squares but now there is a piece)
+                    // if piece isn't blank and blankInARow is bigger than 0 
+                    // (ie there has been some blank squares but now there is a piece)
                     // then add blankInARow to rank
                     if (blankInARow > 0) {
                         rank += String(blankInARow);
@@ -658,7 +704,8 @@ class Board {
 
     
     /** 
-    * Goes through every piece in the board model and adds the piece code of that piece into the onscreen html board.
+    * Goes through every piece in the board model and adds the piece code 
+    * of that piece into the onscreen html board.
     */
     draw() {
         
@@ -667,18 +714,22 @@ class Board {
             let row = this.chessboard[i];
             for (let j = 0; j < row.length; j++) {
                 
-                // turning the column and row values into the coordinates or "id" of each square on the board
+                // turning the column and row values into the coordinates or "id" of 
+                // each square on the board
                 let colLetter = String.fromCharCode(j + 97);
                 let coordinates = colLetter + String(8 - i);
                 
                 // adding unicode to each square depending on piece and coordinates
                 document.getElementById(coordinates).innerHTML = row[j].pieceCode;
                 
-                // making sure that the mouse doesn't look like it can select something while hovering over a blank square
+                // making sure that the mouse doesn't look like it can select something 
+                // while hovering over a blank square
                 if (row[j].pieceCode != ''){
                     document.getElementById(coordinates).style.cursor = "pointer";
                 } else {
-                    document.getElementById(coordinates).style.cursor = "default";  // because moving a piece left a trail which seems selectable
+
+                    // because moving a piece left a trail which seemed selectable
+                    document.getElementById(coordinates).style.cursor = "default";  
                 }
             }
         }
@@ -731,10 +782,13 @@ class Board {
     
 
     /** 
-    * Sets the html element telling the user whose turn it is and manages playing of the AI against the user. 
+    * Sets the html element telling the user whose turn it is and manages 
+    * the playing of the AI against the user. 
     * Also updates the message to say who has won if it is checkmate.
-    * @param {Boolean} [checkmate=false] - Optional variable to tell function if it is checkmate.
-    * @param {Boolean} [showSolution=false] - Optional variable to tell funciton if showSolution has been called.
+    * @param {Boolean} [checkmate=false] - Optional variable to tell function 
+    * if it is checkmate.
+    * @param {Boolean} [showSolution=false] - Optional variable to tell funciton 
+    * if showSolution has been called.
     */
     setTurn(checkmate=false, showSolution=false) {
         let turnElement = document.getElementById("turnToMove");
@@ -745,6 +799,7 @@ class Board {
                 turnElement.innerHTML = "White to Move";
             } else {
                 turnElement.innerHTML = "Black to Move";
+                
                 if (!showSolution) {
                     // if it's black to move then it calls autoPlayMove to make black's move
                     this.autoPlayMove();
@@ -848,6 +903,7 @@ class Board {
     */
     checkIfTakeable(id) {
         let [col, row] = colAndRowFromId(id);
+
         // goes through every value in takeableSquares
         for (let i = 0; i < this.takeableSquares.length; i++) {
             let smallArray = this.takeableSquares[i];
@@ -900,10 +956,11 @@ class Board {
     /** 
     * Checks if the square to be moved to is under attack.
     * @param {String} id - Id of square to move to.
-    * @param {Boolean} [mate=false] - Optional variable, to tell function if checking for mate or not.
+    * @param {Boolean} [mate=false] - Optional variable, to tell 
+    * function if checking for mate or not.
     * @return {Boolean} True if under attack, false if not.
     */
-    checkSquareToMoveTo(id, mate=false) {
+    checkIfSquareUnderAttack(id, mate=false) {
         let squareToMoveTo = this.pieceAtId(id);
 
         // goes through every position on the board
@@ -912,15 +969,19 @@ class Board {
             for (let j = 0; j < row.length; j++) {
                 let coordinates = idFromColAndRow(j + 1, 8 - i);
                 
-                // if not checking for mate, then the attacking piece must be the opposite colour to the turn
-                // but if checking for mate, then attacking piece must be opposite colour to defending piece
-                if ((row[j].colour != turn && !mate) || (row[j].colour != squareToMoveTo.colour && mate)) {
+                // if not checking for mate, then the attacking piece must be 
+                // the opposite colour to the turn but if checking for mate, 
+                // then attacking piece must be opposite colour to defending piece
+                if ((row[j].colour != turn && !mate) || 
+                        (row[j].colour != squareToMoveTo.colour && mate)) {
                     if (row[j].pieceCode != '') {
                         
-                        // checks if the square to move to has a piece and whether checking for mate
+                        // checks if the square to move to has a piece and 
+                        // if not checking for mate
                         if (squareToMoveTo.pieceCode != '' && !mate) {
                             
-                            // if so, check to see if the piece is being defended
+                            // if so, check to see if the piece is under the 
+                            // control of the piece in the iterated position
                             let controlled = row[j].getControlledSquares(board, coordinates);
                             if (controlled.includes(id)) {
                                 return true;
@@ -928,11 +989,15 @@ class Board {
             
                         } else {
                             
-                            // if square is empty, then check if it is being attacked by the piece being looked at
-                            let [takeable, highlight] = row[j].getSquaresIgnoringCheck(board, coordinates);
+                            // if square is empty, then check if it is being attacked 
+                            // by the piece being looked at
+                            let [takeable, highlight] = row[j]
+                                            .getSquaresIgnoringCheck(board, coordinates);
+
                             if (takeable.includes(id) || highlight.includes(id)) {
                                 
-                                // if the piece is a king and function is checking for mate, then if king is undefended return true
+                                // if the piece is a king and function is checking for mate, 
+                                //then if king is undefended return true
                                 if (row[j].piece == king && mate) {
                                     if (!this.checkIfDefended(coordinates)) {
                                         return true;
@@ -1051,10 +1116,12 @@ class Board {
             
             // gets the positions which the piece covers
             let [takeable, highlight] = piece.getLegalSquares(this, checked);
+
+            // checks if the checked king can move
             if (takeable.length == 0 && highlight.length == 0) {
                 
-                // checks if the checked king can move
-                if (this.checkSquareToMoveTo(checked, true)) {
+                // checks if king is currently being attacked
+                if (this.checkIfSquareUnderAttack(checked, true)) {
                     this.setTurn(true);
                 }
 
@@ -1070,7 +1137,7 @@ class Board {
                 }
                 if (takeable.length != 0) {
                     if (takeable.includes(this.attackingPiece)) {
-                        if (!this.checkSquareToMoveTo(this.attackingPiece)) {
+                        if (!this.checkIfSquareUnderAttack(this.attackingPiece)) {
                             return;
                         }
                     }
@@ -1116,7 +1183,8 @@ class Board {
 
     
     /** 
-    *  Function triggered when a square is clicked. Handles the highlighting and moving of pieces when a square is clicked.
+    *  Function triggered when a square is clicked. Handles the highlighting 
+    * and moving of pieces when a square is clicked.
     * @param {HTMLElement} div - the HTML element of the square clicked.
     */
     selectPiece(div) {
@@ -1129,8 +1197,10 @@ class Board {
         let [col, row] = colAndRowFromId(id);
         let position = this.pieceAtId(id)
         
-        // checks if the piece selected is allowed to be selected or if it is a blank square, OR if the square is takeable
-        if ((position.colour == turn || position.colour == null) || (this.takeableSquares.length > 0 && this.checkIfTakeable(id))) {
+        // checks if the piece selected is allowed to be selected or if it is a blank square, 
+        // OR if the square is takeable
+        if ((position.colour == turn || position.colour == null) 
+                || (this.takeableSquares.length > 0 && this.checkIfTakeable(id))) {
 
             // checks if a piece is not currently highlighted
             if (this.highlightedPiece == "") {
@@ -1142,7 +1212,6 @@ class Board {
                     if (document.getElementsByClassName("selected")[0] !== undefined) {
                         this.unSelectSquare(document.getElementsByClassName("selected")[0]);
                     }
-                    
 
                     this.selectSquare(div, id, true);
                     this.highlightedSquares = this.highlightAvailableSquares(id);
@@ -1177,7 +1246,8 @@ class Board {
                             this.unHighlightAvailableSquares(this.highlightedSquares);
                             this.unSelectSquare(highlightedDiv);
                         
-                        // if clicked piece is not enemy piece (ie friendly piece), then unselect currently selected piece
+                        // if clicked piece is not enemy piece (ie friendly piece), 
+                        // then unselect currently selected piece
                         // and select the new piece
                         } else {
                             if (this.takeableSquares.length != 0) {
@@ -1192,10 +1262,12 @@ class Board {
                     }
                 } else {
                     
-                    // checks if the square has a green dot (ie is a legal move for the currently highighted piece)
+                    // checks if the square has a green dot 
+                    // (ie is a legal move for the currently highighted piece)
                     if (div.lastChild) {
                         
-                        // un-highlights any squares that are moveable to or pieces that are takeable
+                        // un-highlights any squares that are moveable to or 
+                        // pieces that are takeable
                         this.unHighlightAvailableSquares(this.highlightedSquares);
                         if (this.takeableSquares.length != 0) {
                             this.makeUnTakeable();
@@ -1288,7 +1360,8 @@ class Board {
 
         
     /** 
-    * Finds all the possible moves for a piece and checks which ones are legal, calling appropriate methods to highlight
+    * Finds all the possible moves for a piece and checks which ones are 
+    * legal, calling appropriate methods to highlight
     * them on the board.
     * @param {String} id - the id of the piece to have its available squares to move to highlighted.
     * @return {Array} All the possible squares that can be moved to legally by the selected piece.
@@ -1298,12 +1371,15 @@ class Board {
         let piece = this.pieceAtId(id);
         
         // checks if either player is in check and if it is their turn
-        if ((player1.setCheck(this) && player1.colour == turn) || (player2.setCheck(this) && player2.colour == turn)) {
+        if ((player1.setCheck(this) && player1.colour == turn) 
+            || (player2.setCheck(this) && player2.colour == turn)) {
+
             let takeable = [];
             let highlight = [];
             
-            // pawns are different becuase their getSquaresIgnoringCheck method looks for which squares they control
-            // the king is different because it is in check
+            // pawns are different becuase their getSquaresIgnoringCheck method 
+            // looks for which squares they control the king is different 
+            // because it is in check
             if (piece.piece == pawn || piece.piece == king) {
                 [takeable, highlight] = piece.getLegalSquares(this, id);
             } else {
@@ -1313,7 +1389,8 @@ class Board {
             if (highlight.length != 0) {
                 for (let i = 0; i < highlight.length; i++) {
                     
-                    // checking if moving to that square gets the king out of check before displaying it as valid
+                    // checking if moving to that square gets the king out 
+                    // of check before displaying it as valid
                     if (this.getsOutOfCheck(this.highlightedPiece, highlight[i])) {
                         let div = document.getElementById(highlight[i]);
                         this.highlightSquare(div);
@@ -1442,8 +1519,7 @@ class Board {
         for (let i = 0; i < this.takeableSquares.length; i++) {
             let [col, row] = this.takeableSquares[i];
 
-            let colLetter = String.fromCharCode(col + 96);
-            let coordinates = colLetter + String(row);
+            let coordinates = idFromColAndRow(col, row);
             let div = document.getElementById(coordinates);
             this.resetSquareColour(div);
         }
@@ -1525,6 +1601,7 @@ class Piece {
 */
 class Blank extends Piece{
     constructor() {
+        super();
         this.pieceCode = '';
         this.colour = null
         this.piece = "blank";
@@ -1586,10 +1663,12 @@ class Pawn extends Piece {
 
     
     /** 
-    * Turns a list of all possible squares into a list of only the legal squares the pawn can move to.
+    * Turns a list of all possible squares into a list of only the legal squares the 
+    * pawn can move to.
     * @param {Object} board - Instantiation of board class used for handling model etc.
     * @param {String} id - Position of pawn on the board.
-    * @return {Array} Takeable is list of positions to move to take a piece and highlight is list of positions to move to normally
+    * @return {Array} Takeable is list of positions to move to take a piece and highlight is 
+    * list of positions to move to normally
     */
     getLegalSquares(board, id) {
         let squares = this.getSquares(id);
@@ -1616,7 +1695,8 @@ class Pawn extends Piece {
                         highlight.push(coordinates);
                     } else {
 
-                        // stops pawns from hopping over pieces to go behind them when on first rank
+                        // stops pawns from hopping over pieces to go behind them 
+                        // when on first rank
                         if (squares[i + 1]) { 
                             if (this.colour == white) {
                                 if (squares[i + 1][1] == row + 1) {
@@ -1640,7 +1720,8 @@ class Pawn extends Piece {
     * Calls getControlledSquares as it needs to get the squares controlled by the pawn.
     * @param {Object} board - Instantiation of the board object.
     * @param {String} id - Position of the pawn.
-    * @return {Array} Array with return from function call and empty array to fulfil checks done on the function when called.
+    * @return {Array} Array with return from function call and empty array to 
+    * fulfil checks done on the function when called.
     */
     getSquaresIgnoringCheck(board, id) {
         return [this.getControlledSquares(board, id), []];
@@ -1704,7 +1785,8 @@ class Rook extends Piece {
     * Turns a list of all possible squares to move to, to just legal squares to move to.
     * @param {Object} board - Instantiation of board class.
     * @param {String} id - Position of rook.
-    * @param {Boolean} [controlled=false] - Optional variable to tell the function if finding squares that the rook controls.
+    * @param {Boolean} [controlled=false] - Optional variable to tell the function if 
+    * finding squares that the rook controls.
     * @return {Array} Takeable and highlight arrays for where the rook can move.
     */
     getLegalSquares(board, id, controlled=false) {
@@ -1722,9 +1804,11 @@ class Rook extends Piece {
                 let coordinates = idFromColAndRow(col, row);
                 let piece = board.pieceAt(row, col);
                 
-                // checks if there is a piece in that position and if so, checks if it a piece of the opposite colour 
-                // if looking for place to move, or checks if its the same colour if looking for pieces the rook controls
-                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) || (piece.colour == this.colour && controlled))) {
+                // checks if there is a piece in that position and if so, checks if it a 
+                // piece of the opposite colour if looking for place to move, or checks 
+                // if its the same colour if looking for pieces the rook controls
+                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) 
+                    || (piece.colour == this.colour && controlled))) {
 
                     // if so, adds position to takeable array
                     takeable.push(coordinates);
@@ -1854,7 +1938,8 @@ class Knight extends Piece {
     * Turns a list of all possible squares to move to, to just legal squares to move to.
     * @param {Object} board - Instantiation of board class.
     * @param {String} id - Position of knight.
-    * @param {Boolean} [controlled=false] - Optional variable to tell the function if finding squares that the knight controls.
+    * @param {Boolean} [controlled=false] - Optional variable to tell the function 
+    * if finding squares that the knight controls.
     * @return {Array} Takeable and highlight arrays for where the knight can move.
     */
     getLegalSquares(board, id, controlled=false) {
@@ -1871,9 +1956,11 @@ class Knight extends Piece {
                 let coordinates = idFromColAndRow(col, row);
                 let piece = board.pieceAt(row, col);
                 
-                // checks if there is a piece in that position and if so, checks if it a piece of the opposite colour 
-                // if looking for place to move, or checks if its the same colour if looking for pieces the knight controls
-                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) || (piece.colour == this.colour && controlled))) { 
+                // checks if there is a piece in that position and if so, checks 
+                // if it a piece of the opposite colour if looking for place to move, 
+                // or checks if its the same colour if looking for pieces the knight controls
+                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) 
+                    || (piece.colour == this.colour && controlled))) { 
                     takeable.push(coordinates);
                 } else if (piece.pieceCode == "") {
                     highlight.push(coordinates);
@@ -1933,7 +2020,6 @@ class Bishop extends Piece {
             squares.push([col - i, row - i]);
         }
         return squares;
-
     }
 
     
@@ -1941,7 +2027,8 @@ class Bishop extends Piece {
     * Turns a list of all possible squares to move to, to just legal squares to move to.
     * @param {Object} board - Instantiation of board class.
     * @param {String} id - Position of bishop.
-    * @param {Boolean} [controlled=false] - Optional variable to tell the function if finding squares that the bishop controls.
+    * @param {Boolean} [controlled=false] - Optional variable to tell the function 
+    * if finding squares that the bishop controls.
     * @return {Array} Takeable and highlight arrays for where the bishop can move.
     */
     getLegalSquares(board, id, controlled=false) {
@@ -1959,10 +2046,13 @@ class Bishop extends Piece {
                 let coordinates = idFromColAndRow(col, row);
                 let piece = board.pieceAt(row, col);
 
-                // checks if there is a piece in that position and if so, checks if it a piece of the opposite colour 
-                // if looking for place to move, or checks if its the same colour if looking for pieces the bishop controls
-                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) || (piece.colour == this.colour && controlled))) {
+                // checks if there is a piece in that position and if so, 
+                //checks if it a piece of the opposite colour if looking for place to move, 
+                // or checks if its the same colour if looking for pieces the bishop controls
+                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) 
+                    || (piece.colour == this.colour && controlled))) {
                     takeable.push(coordinates);
+
                 } else if (piece.pieceCode == "") {
                     highlight.push(coordinates);
                     continue;
@@ -1996,8 +2086,7 @@ class Bishop extends Piece {
                 }
             }
         }
-
-        return [takeable, highlight]
+        return [takeable, highlight];
     }
 
     
@@ -2063,7 +2152,8 @@ class Queen extends Piece {
     * Turns a list of all possible squares to move to, to just legal squares to move to.
     * @param {Object} board - Instantiation of board class.
     * @param {String} id - Position of queen.
-    * @param {Boolean} [controlled=false] - Optional variable to tell the function if finding squares that the queen controls.
+    * @param {Boolean} [controlled=false] - Optional variable to tell the function 
+    * if finding squares that the queen controls.
     * @return {Array} Takeable and highlight arrays for where the queen can move.
     */
     getLegalSquares(board, id, controlled=false) {
@@ -2081,9 +2171,11 @@ class Queen extends Piece {
                 let coordinates = idFromColAndRow(col, row);
                 let piece = board.pieceAt(row, col);
 
-                // checks if there is a piece in that position and if so, checks if it a piece of the opposite colour 
-                // if looking for place to move, or checks if its the same colour if looking for pieces the queen controls
-                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) || (piece.colour == this.colour && controlled))) {
+                // checks if there is a piece in that position and if so, 
+                // checks if it a piece of the opposite colour if looking for place to move, 
+                // or checks if its the same colour if looking for pieces the queen controls
+                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) 
+                    || (piece.colour == this.colour && controlled))) {
                     takeable.push(coordinates);
 
                 } else if (piece.pieceCode == "") {
@@ -2143,7 +2235,7 @@ class Queen extends Piece {
                 }
             }
         }
-        return [takeable, highlight]
+        return [takeable, highlight];
     }
 
     /** 
@@ -2224,7 +2316,7 @@ class King extends Piece {
                 let coordinates = idFromColAndRow(col, row);
                 
                 // makes sure the move won't put the king in check
-                if (!board.checkSquareToMoveTo(coordinates)) {
+                if (!board.checkIfSquareUnderAttack(coordinates)) {
                     if (piece.pieceCode != "" && piece.colour != this.colour) {
                         takeable.push(coordinates);
                     } else if (piece.pieceCode == "") {
@@ -2233,14 +2325,16 @@ class King extends Piece {
                 }
             }
         }
-        return [takeable, highlight]
+        return [takeable, highlight];
     }
 
     /** 
-    * Turns a list of all possible squares to move to, to just legal squares to move to, ignoring check.
+    * Turns a list of all possible squares to move to, to just legal squares to move to, 
+    * ignoring check.
     * @param {Object} board - Instantiation of board class.
     * @param {String} id - Position of king.
-    * @param {Boolean} [controlled=false] - Optional variable to tell the function if finding squares that the king controls.
+    * @param {Boolean} [controlled=false] - Optional variable to tell the function 
+    * if finding squares that the king controls.
     * @return {Array} Takeable and highlight arrays for where the king can move.
     */
     getSquaresIgnoringCheck(board, id, controlled=false) {
@@ -2257,16 +2351,18 @@ class King extends Piece {
                 let piece = board.pieceAt(row, col);
                 let coordinates = idFromColAndRow(col, row);
                 
-                // checks if there is a piece in that position and if so, checks if it a piece of the opposite colour 
-                // if looking for place to move, or checks if its the same colour if looking for pieces the king controls
-                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) || (piece.colour == this.colour && controlled))) {
+                // checks if there is a piece in that position and if so, 
+                // checks if it a piece of the opposite colour if looking for place to move, 
+                // or checks if its the same colour if looking for pieces the king controls
+                if (piece.pieceCode != "" && ((piece.colour != this.colour && !controlled) 
+                || (piece.colour == this.colour && controlled))) {
                     takeable.push(coordinates);
                 } else if (piece.pieceCode == "") {
                     highlight.push(coordinates);
                 }
             }
         }
-        return [takeable, highlight]
+        return [takeable, highlight];
     }
     
 
