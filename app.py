@@ -11,6 +11,7 @@ import random
 app = Flask(__name__)
 app.secret_key = "KJHGLKJGjglkjhskdfjsJKHGk"
 
+print("hello world")
 class Endgames:
 
     def getFEN(self, name):
@@ -232,5 +233,4 @@ def nextMove():
     fen = request.json["fen"]
     uciMove, moveCount = fetchFromLila(fen)
     return {"a": uciMove, "b": moveCount}
-    
     
